@@ -1,0 +1,267 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="income-container">
+    <div class="page-header">
+        <div>
+            <h1 class="h2">Income</h1>
+            <p class="text-muted mb-0">Track and manage your earnings</p>
+        </div>
+        <div>
+            <a href="{{ url_for('income.new_income') }}" class="btn btn-success">
+                <i class="fas fa-plus me-2"></i>Add New Income
+            </a>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="income-card income-stat-card income-total-card {% if is_filtered %}filtered-stats{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-white-50">Total Income</h6>
+                            <h2 class="card-value">₹{{ total_income|round(2)|format_number }}</h2>
+                            <p class="card-period mb-0 opacity-75">{{ period_title }}</p>
+                        </div>
+                        <div class="stat-icon bg-white text-primary">
+                            <i class="fas fa-money-bill-wave fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="income-card income-stat-card income-avg-card {% if is_filtered %}filtered-stats{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-white-50">Average Income</h6>
+                            <h2 class="card-value">₹{{ avg_income|round(2)|format_number }}</h2>
+                            <p class="card-period mb-0 opacity-75">Per Transaction</p>
+                        </div>
+                        <div class="stat-icon bg-white text-secondary">
+                            <i class="fas fa-chart-line fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="income-card income-stat-card income-month-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="card-title text-white-50">Monthly Income</h6>
+                            <h2 class="card-value">₹{{ monthly_total|round(2)|format_number }}</h2>
+                            <p class="card-period mb-0 opacity-75">{{ today.strftime('%B %Y') }}</p>
+                        </div>
+                        <div class="stat-icon bg-white text-warning">
+                            <i class="fas fa-calendar fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="filter-section mb-4">
+        <form action="{{ url_for('income.incomes') }}" method="GET" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Filter by Date</label>
+                    <select class="form-select form-select-sm" name="date_filter" id="dateFilter" onchange="handleDateFilterChange(this);">
+                        <option value="all" {% if request.args.get('date_filter') == 'all' or not request.args.get('date_filter') %}selected{% endif %}>All Time</option>
+                        <option value="this_month" {% if request.args.get('date_filter') == 'this_month' %}selected{% endif %}>This Month</option>
+                        <option value="last_month" {% if request.args.get('date_filter') == 'last_month' %}selected{% endif %}>Last Month</option>
+                        <option value="this_year" {% if request.args.get('date_filter') == 'this_year' %}selected{% endif %}>This Year</option>
+                        <option value="last_year" {% if request.args.get('date_filter') == 'last_year' %}selected{% endif %}>Last Year</option>
+                        <option value="custom" {% if request.args.get('date_filter') == 'custom' %}selected{% endif %}>Custom Range</option>
+                    </select>
+                    
+                    <div class="row mt-2 {% if request.args.get('date_filter') != 'custom' %}d-none{% endif %}" id="dateRangeInputs">
+                        <div class="col-6">
+                            <input type="date" class="form-control form-control-sm" name="start_date" value="{{ request.args.get('start_date', '') }}" placeholder="Start Date">
+                        </div>
+                        <div class="col-6">
+                            <input type="date" class="form-control form-control-sm" name="end_date" value="{{ request.args.get('end_date', '') }}" placeholder="End Date">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Filter by Source</label>
+                    <select class="form-select form-select-sm" name="source" onchange="document.getElementById('filterForm').submit();">
+                        <option value="" {% if not request.args.get('source') %}selected{% endif %}>All Sources</option>
+                        {% for source in sources %}
+                            <option value="{{ source }}" {% if request.args.get('source') == source %}selected{% endif %}>
+                                {{ source }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-sm btn-primary me-2">Apply Filters</button>
+                    {% if request.args.get('date_filter') or request.args.get('source') %}
+                        <a href="{{ url_for('income.incomes') }}" class="btn btn-sm btn-outline-secondary">Clear Filters</a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="income-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="income-icon-circle success-bg me-3">
+                    <i class="fas fa-hand-holding-dollar text-white"></i>
+                </div>
+                <h5 class="mb-0">Income Records</h5>
+            </div>
+            <span class="badge bg-primary">{{ incomes.total }} Records</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table income-table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Source</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for income in incomes.items %}
+                        <tr>
+                            <td>
+                                <div class="income-date">
+                                    <span class="date-day">{{ income.date.strftime('%d') }}</span>
+                                    <span class="date-month">{{ income.date.strftime('%b') }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    {{ income.source }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 250px;">
+                                    {{ income.description or 'No description' }}
+                                </div>
+                            </td>
+                            <td class="text-end fw-bold text-success">₹{{ income.amount|round(2)|format_number }}</td>
+                            <td class="text-center">
+                                <a href="{{ url_for('income.income_detail', income_id=income.id) }}" class="btn action-btn action-btn-view" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('income.update_income', income_id=income.id) }}" class="btn action-btn action-btn-edit" title="Edit Income">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn action-btn action-btn-delete" title="Delete Income" data-bs-toggle="modal" data-bs-target="#deleteModal{{ income.id }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            
+                            <!-- Delete Confirmation Modal -->
+                            <div class="modal fade" id="deleteModal{{ income.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="text-center mb-3">
+                                                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                                                <h5>Are you sure you want to delete this income record?</h5>
+                                                <p class="text-muted">Amount: ₹{{ income.amount|round(2)|format_number }} | Date: {{ income.date.strftime('%b %d, %Y') }}</p>
+                                                <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                                            <form action="{{ url_for('income.delete_income', income_id=income.id) }}" method="POST">
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-trash me-1"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="fas fa-hand-holding-dollar fa-4x text-muted mb-3"></i>
+                                <p class="lead text-muted">No income records found</p>
+                                <p class="text-muted mb-3">Start tracking your earnings by adding your first income record</p>
+                                <a href="{{ url_for('income.new_income') }}" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Add New Income
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    {% if incomes.items %}
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <div>
+            <small class="text-muted">Showing {{ incomes.items|length }} of {{ incomes.total }} records</small>
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if not incomes.has_prev %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('income.incomes', page=incomes.prev_num, date_filter=request.args.get('date_filter', 'all'), source=request.args.get('source', ''), start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) if incomes.has_prev else '#' }}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                
+                {% for page_num in incomes.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                    {% if page_num %}
+                        <li class="page-item {% if incomes.page == page_num %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('income.incomes', page=page_num, date_filter=request.args.get('date_filter', 'all'), source=request.args.get('source', ''), start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                <li class="page-item {% if not incomes.has_next %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('income.incomes', page=incomes.next_num, date_filter=request.args.get('date_filter', 'all'), source=request.args.get('source', ''), start_date=request.args.get('start_date', ''), end_date=request.args.get('end_date', '')) if incomes.has_next else '#' }}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<!-- JavaScript for Date Filter -->
+<script>
+function handleDateFilterChange(selectElement) {
+    const dateRangeInputs = document.getElementById('dateRangeInputs');
+    if (selectElement.value === 'custom') {
+        dateRangeInputs.classList.remove('d-none');
+    } else {
+        dateRangeInputs.classList.add('d-none');
+        // Auto-submit when changing to non-custom date filter
+        document.getElementById('filterForm').submit();
+    }
+}
+</script>
+{% endblock %}

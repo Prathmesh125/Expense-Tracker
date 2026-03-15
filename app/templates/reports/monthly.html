@@ -1,0 +1,394 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="h2">Monthly Report</h1>
+        <p class="text-muted">Financial overview for the last 12 months</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('reports.report_dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-calendar-alt me-1"></i> Custom Report
+            </a>
+            <a href="{{ url_for('reports.budget_report') }}" class="btn btn-outline-primary">
+                <i class="fas fa-balance-scale me-1"></i> Budget Report
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Key metrics summary cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase">Avg. Monthly Income</h6>
+                <h2 class="mb-0">₹{{ avg_income|round(2) }}</h2>
+                <p class="mt-2 mb-0">
+                    {% if income_trend > 0 %}
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <small>{{ income_trend|round(1) }}% increase</small>
+                    {% elif income_trend < 0 %}
+                    <i class="fas fa-arrow-down me-1"></i>
+                    <small>{{ (income_trend * -1)|round(1) }}% decrease</small>
+                    {% else %}
+                    <i class="fas fa-minus me-1"></i>
+                    <small>No change</small>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase">Avg. Monthly Expenses</h6>
+                <h2 class="mb-0">₹{{ avg_expense|round(2) }}</h2>
+                <p class="mt-2 mb-0">
+                    {% if expense_trend > 0 %}
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <small>{{ expense_trend|round(1) }}% increase</small>
+                    {% elif expense_trend < 0 %}
+                    <i class="fas fa-arrow-down me-1"></i>
+                    <small>{{ (expense_trend * -1)|round(1) }}% decrease</small>
+                    {% else %}
+                    <i class="fas fa-minus me-1"></i>
+                    <small>No change</small>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase">Avg. Savings Rate</h6>
+                <h2 class="mb-0">{{ avg_savings_rate|round(1) }}%</h2>
+                <p class="mt-2 mb-0">
+                    {% if avg_savings_rate >= 20 %}
+                    <i class="fas fa-thumbs-up me-1"></i>
+                    <small>Excellent saving habits</small>
+                    {% elif avg_savings_rate >= 10 %}
+                    <i class="fas fa-smile me-1"></i>
+                    <small>Good saving habits</small>
+                    {% elif avg_savings_rate > 0 %}
+                    <i class="fas fa-meh me-1"></i>
+                    <small>Some savings</small>
+                    {% else %}
+                    <i class="fas fa-frown me-1"></i>
+                    <small>No savings</small>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body">
+                <h6 class="card-title text-uppercase">Positive Balance Months</h6>
+                <h2 class="mb-0">{{ positive_months }}/12</h2>
+                <p class="mt-2 mb-0">
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-light" role="progressbar" 
+                             style="width: {{ (positive_months/12)*100 }}%" 
+                             aria-valuenow="{{ positive_months }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="12"></div>
+                    </div>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Monthly Income and Expenses (Last 12 Months)</h5>
+    </div>
+    <div class="card-body">
+        <div id="monthly-chart" style="height: 400px;"></div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                try {
+                    // Store chart data as a variable to avoid template parsing issues
+                    const monthlyChartData = '{{ monthly_chart|safe }}';
+                    const chartData = JSON.parse(monthlyChartData);
+                    
+                    Plotly.newPlot('monthly-chart', chartData.data, chartData.layout, {
+                        responsive: true,
+                        displayModeBar: false
+                    });
+                    
+                    // Handle resize events
+                    window.addEventListener('resize', function() {
+                        Plotly.relayout('monthly-chart', {
+                            'xaxis.autorange': true,
+                            'yaxis.autorange': true
+                        });
+                    });
+                } catch (e) {
+                    console.error("Error rendering monthly chart:", e);
+                    document.getElementById('monthly-chart').innerHTML = 
+                        '<div class="alert alert-warning">Error rendering chart. Please try again later.</div>';
+                }
+            });
+        </script>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Monthly Summary</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Month</th>
+                                <th class="text-end">Income</th>
+                                <th class="text-end">Expenses</th>
+                                <th class="text-end">Balance</th>
+                                <th class="text-end">Savings Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in range(12) %}
+                            <tr>
+                                <td>{{ months[i] }}</td>
+                                <td class="text-end text-success">₹{{ income_data[i]|round(2) }}</td>
+                                <td class="text-end text-danger">₹{{ expense_data[i]|round(2) }}</td>
+                                <td class="text-end {% if balance_data[i] >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ₹{{ balance_data[i]|round(2) }}
+                                </td>
+                                <td class="text-end">
+                                    {% if income_data[i] > 0 %}
+                                        {{ savings_rate[i]|round(1) }}%
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Monthly Analysis</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>Highest Income Month</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ max_income_month }}</span>
+                        <span class="text-success">₹{{ max_income_value|round(2) }}</span>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        {% if max_income_value > 0 %}
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                        {% else %}
+                        <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Highest Expense Month</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>{{ max_expense_month }}</span>
+                        <span class="text-danger">₹{{ max_expense_value|round(2) }}</span>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        {% if max_expense_value > 0 %}
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                        {% else %}
+                        <div class="progress-bar bg-secondary" role="progressbar" style="width: 100%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6>Monthly Savings Trend</h6>
+                    <div class="small-chart" id="savings-rate-chart" style="height: 100px;"></div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            try {
+                                const months = {{ months|tojson }};
+                                const savingsData = {{ savings_rate|tojson }};
+                                
+                                const savingsChart = {
+                                    data: [{
+                                        x: months,
+                                        y: savingsData,
+                                        type: 'scatter',
+                                        mode: 'lines+markers',
+                                        line: {color: '#4BC0C0', width: 2},
+                                        marker: {size: 6}
+                                    }],
+                                    layout: {
+                                        margin: {t: 5, r: 10, l: 40, b: 30},
+                                        xaxis: {showticklabels: false},
+                                        yaxis: {
+                                            title: {text: 'Savings %'},
+                                            zeroline: true
+                                        },
+                                        showlegend: false,
+                                        plot_bgcolor: 'rgba(0,0,0,0)'
+                                    }
+                                };
+                                
+                                Plotly.newPlot('savings-rate-chart', savingsChart.data, savingsChart.layout, {
+                                    responsive: true,
+                                    displayModeBar: false
+                                });
+                            } catch (e) {
+                                console.error("Error rendering savings chart:", e);
+                            }
+                        });
+                    </script>
+                </div>
+                
+                <div>
+                    <h6>Average Monthly</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-3 text-center">
+                                    <p class="mb-1">Income</p>
+                                    <h5 class="text-success">₹{{ avg_income|round(2) }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body p-3 text-center">
+                                    <p class="mb-1">Expenses</p>
+                                    <h5 class="text-danger">₹{{ avg_expense|round(2) }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Financial Health Indicators -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">Financial Health Indicators</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h6>Income Stability</h6>
+                    {% set income_stability = 100 - (income_trend|abs) if income_trend|abs < 50 else 50 %}
+                    <div class="progress">
+                        <div class="progress-bar {% if income_stability > 75 %}bg-success{% elif income_stability > 50 %}bg-info{% elif income_stability > 25 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ income_stability }}%">
+                             {{ income_stability|round }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% if income_stability > 75 %}
+                        Income is very stable over time
+                        {% elif income_stability > 50 %}
+                        Moderately stable income
+                        {% elif income_stability > 25 %}
+                        Income fluctuates considerably
+                        {% else %}
+                        Highly volatile income
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h6>Expense Control</h6>
+                    {% set expense_control = 100 - (expense_trend) if expense_trend > 0 else 100 %}
+                    <div class="progress">
+                        <div class="progress-bar {% if expense_control > 75 %}bg-success{% elif expense_control > 50 %}bg-info{% elif expense_control > 25 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ expense_control }}%">
+                             {{ expense_control|round }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% if expense_control > 75 %}
+                        Excellent expense control
+                        {% elif expense_control > 50 %}
+                        Good expense management
+                        {% elif expense_control > 25 %}
+                        Expenses growing moderately
+                        {% else %}
+                        Expenses growing rapidly
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="metric-card">
+                    <h6>Overall Financial Health</h6>
+                    {% set financial_health = ((positive_months/12)*100 + avg_savings_rate) / 2 %}
+                    <div class="progress">
+                        <div class="progress-bar {% if financial_health > 75 %}bg-success{% elif financial_health > 50 %}bg-info{% elif financial_health > 25 %}bg-warning{% else %}bg-danger{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ financial_health }}%">
+                             {{ financial_health|round }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">
+                        {% if financial_health > 75 %}
+                        Excellent financial health
+                        {% elif financial_health > 50 %}
+                        Good financial standing
+                        {% elif financial_health > 25 %}
+                        Needs improvement
+                        {% else %}
+                        Financial attention required
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .metric-card {
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+        margin-bottom: 15px;
+    }
+    .metric-card h6 {
+        margin-bottom: 10px;
+    }
+    .metric-card .progress {
+        height: 20px;
+        margin-bottom: 8px;
+    }
+    .metric-card .progress-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+    }
+</style>
+{% endblock %}

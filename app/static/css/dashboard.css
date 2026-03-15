@@ -1,0 +1,316 @@
+/* Enhanced dashboard styles */
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --success-color: #4cc9f0;
+  --danger-color: #f72585;
+  --warning-color: #f8961e;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --gray-color: #6c757d;
+  --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --transition-speed: 0.3s;
+}
+
+/* Dashboard Layout */
+.dashboard-container {
+  padding: 1.5rem 0;
+}
+
+/* Summary Cards */
+.summary-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform var(--transition-speed);
+  height: 100%;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+}
+
+.income-card {
+  background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+}
+
+.expense-card {
+  background: linear-gradient(135deg, #f72585 0%, #b5179e 100%);
+}
+
+.balance-card {
+  background: linear-gradient(135deg, #4895ef 0%, #3f37c9 100%);
+}
+
+.budget-card {
+  background: linear-gradient(135deg, #f8961e 0%, #f3722c 100%);
+}
+
+.summary-card .card-body {
+  position: relative;
+  padding: 1.5rem;
+  color: white;
+}
+
+.summary-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2.5rem;
+  opacity: 0.25;
+}
+
+.card-title {
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.card-period {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-bottom: 0;
+}
+
+/* Chart Cards */
+.chart-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 1.5rem;
+}
+
+.chart-card .card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+.chart-card .card-body {
+  padding: 1.25rem;
+}
+
+/* Transaction Cards */
+.transaction-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.transaction-card .card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+.transaction-table {
+  margin-bottom: 0;
+}
+
+.transaction-table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--gray-color);
+  padding: 0.75rem 1.25rem;
+}
+
+.transaction-table td {
+  padding: 0.75rem 1.25rem;
+  vertical-align: middle;
+}
+
+.transaction-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.transaction-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.35rem;
+  border-radius: 0.5rem;
+  line-height: 1;
+  min-width: 50px;
+}
+
+.transaction-date-small {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.date-day {
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.date-month {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+/* Action buttons and filters */
+.btn-group .btn {
+  border-radius: 0.5rem;
+  margin-right: 0.25rem;
+}
+
+.btn-group .btn:last-child {
+  margin-right: 0;
+}
+
+.time-filter, .chart-type, .transaction-filter {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.time-filter.active, .chart-type.active, .transaction-filter.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+/* Responsive styles */
+@media (max-width: 991.98px) {
+  .dashboard-container {
+    padding: 1rem 0;
+  }
+
+  .dashboard-container .h2.d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+
+  .summary-card {
+    margin-bottom: 1rem;
+  }
+
+  .chart-card .card-header,
+  .transaction-card .card-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .chart-card .card-header .btn-group,
+  .transaction-card .card-header .btn-group {
+    width: 100%;
+  }
+
+  .chart-card .card-header .btn-group .btn,
+  .transaction-card .card-header .btn-group .btn {
+    flex: 1 1 auto;
+  }
+
+  .transaction-table th,
+  .transaction-table td {
+    padding: 0.6rem 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+/* Utility classes */
+.fw-medium {
+  font-weight: 500;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Transactions Table */
+.transaction-table {
+  margin-bottom: 0;
+}
+
+.transaction-table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+}
+
+.transaction-row {
+  transition: background-color var(--transition-speed);
+}
+
+.transaction-row:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.income-row {
+  border-left: 4px solid var(--success-color);
+}
+
+.expense-row {
+  border-left: 4px solid var(--danger-color);
+}
+
+.category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+}
+
+.income-badge {
+  background-color: var(--success-color);
+}
+
+/* Budget Section */
+.budget-item {
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+}
+
+.budget-amount {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.progress {
+  height: 0.5rem;
+  border-radius: 0.25rem;
+}
+
+/* Filter Controls */
+.time-filter, .chart-type {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 575.98px) {
+  .summary-section .col-md-3 {
+    margin-bottom: 1rem;
+  }
+  
+  .card-value {
+    font-size: 1.35rem;
+  }
+  
+  .summary-icon {
+    font-size: 1.8rem;
+  }
+
+  .transaction-table th:nth-child(3),
+  .transaction-table td:nth-child(3) {
+    display: none;
+  }
+}

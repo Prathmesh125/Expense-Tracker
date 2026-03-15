@@ -1,0 +1,233 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="h2">Budget Report</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('reports.report_dashboard') }}" class="btn btn-outline-primary">
+                <i class="fas fa-calendar-alt me-1"></i> Custom Report
+            </a>
+            <a href="{{ url_for('reports.monthly_report') }}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar me-1"></i> Monthly Report
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Set Budget</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.category.label(class="form-label") }}
+                        {% if form.category.errors %}
+                            {{ form.category(class="form-select is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.category.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.category(class="form-select") }}
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.month.label(class="form-label") }}
+                                {% if form.month.errors %}
+                                    {{ form.month(class="form-select is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.month.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.month(class="form-select") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.year.label(class="form-label") }}
+                                {% if form.year.errors %}
+                                    {{ form.year(class="form-select is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.year.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.year(class="form-select") }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.amount.label(class="form-label") }}
+                        {% if form.amount.errors %}
+                            {{ form.amount(class="form-control is-invalid") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.amount.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.amount(class="form-control", placeholder="Enter budget amount") }}
+                        {% endif %}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Tips for Budgeting</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex">
+                        <i class="fas fa-lightbulb text-warning me-3 mt-1"></i>
+                        <div>
+                            <strong>50/30/20 Rule</strong>
+                            <p class="mb-0 small">50% for needs, 30% for wants, and 20% for savings.</p>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex">
+                        <i class="fas fa-lightbulb text-warning me-3 mt-1"></i>
+                        <div>
+                            <strong>Set Realistic Goals</strong>
+                            <p class="mb-0 small">Start with your current spending and gradually reduce it.</p>
+                        </div>
+                    </li>
+                    <li class="list-group-item d-flex">
+                        <i class="fas fa-lightbulb text-warning me-3 mt-1"></i>
+                        <div>
+                            <strong>Review Regularly</strong>
+                            <p class="mb-0 small">Adjust your budget monthly based on your actual spending.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-7">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Budget vs. Actual for {{ current_month }} {{ current_year }}</h5>
+            </div>
+            <div class="card-body">
+                {% if budget_chart %}
+                <div id="budget-chart" style="height: 400px;"></div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        try {
+                            // Store chart data as a variable to avoid template parsing issues
+                            const budgetChartData = '{{ budget_chart|safe }}';
+                            const chartData = JSON.parse(budgetChartData);
+                            
+                            Plotly.newPlot('budget-chart', chartData.data, chartData.layout, {
+                                responsive: true,
+                                displayModeBar: false
+                            });
+                            
+                            // Handle resize events
+                            window.addEventListener('resize', function() {
+                                Plotly.relayout('budget-chart', {
+                                    'xaxis.autorange': true,
+                                    'yaxis.autorange': true
+                                });
+                            });
+                        } catch (e) {
+                            console.error("Error rendering budget chart:", e);
+                            document.getElementById('budget-chart').innerHTML = 
+                                '<div class="alert alert-warning">Error rendering chart. Please try again later.</div>';
+                        }
+                    });
+                </script>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                    <h5>No budget data available</h5>
+                    <p class="text-muted">Set up budgets for categories to see a comparison chart.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Current Budgets</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th class="text-end">Budget</th>
+                                <th class="text-end">Actual</th>
+                                <th class="text-end">Remaining</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for budget in budgets %}
+                            {% set actual = expense_dict.get(budget.category_id, 0) %}
+                            {% set remaining = budget.amount - actual %}
+                            {% set percentage = (actual / budget.amount * 100) if budget.amount > 0 else 0 %}
+                            <tr>
+                                <td>{{ budget.category.name if budget.category else 'Uncategorized' }}</td>
+                                <td class="text-end">₹{{ budget.amount|round(2) }}</td>
+                                <td class="text-end">₹{{ actual|round(2) }}</td>
+                                <td class="text-end {% if remaining >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    ₹{{ remaining|round(2) }}
+                                </td>
+                                <td>
+                                    <div class="progress">
+                                        {% set display_percentage = 100 if percentage > 100 else percentage %}
+                                        {% set bar_class = 'bg-danger' if percentage > 100 else ('bg-warning' if percentage > 80 else 'bg-success') %}
+                                        <div class="progress-bar {{ bar_class }}"
+                                             role="progressbar"
+                                             data-width="{{ display_percentage }}"
+                                             aria-valuenow="{{ percentage|round }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100"
+                                             style="width: 0%">
+                                            {{ percentage|round }}%
+                                        </div>
+                                    </div>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            const progressBar = document.currentScript.previousElementSibling.querySelector('.progress-bar');
+                                            const width = progressBar.getAttribute('data-width');
+                                            progressBar.style.width = width + '%';
+                                        });
+                                    </script>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-3">No budgets set for this month. Set one using the form.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

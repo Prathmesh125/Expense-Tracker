@@ -1,0 +1,127 @@
+/* Reports CSS */
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --success-color: #4cc9f0;
+  --danger-color: #f72585;
+  --warning-color: #f8961e;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --gray-color: #6c757d;
+  --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --transition-speed: 0.3s;
+}
+
+/* Report Container */
+.report-container {
+  padding: 1.5rem 0;
+}
+
+/* Report Card */
+.report-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform var(--transition-speed);
+  margin-bottom: 2rem;
+}
+
+.report-card .card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+.report-card .card-body {
+  padding: 1.5rem;
+}
+
+/* Report Table */
+.report-table {
+  margin-bottom: 0;
+}
+
+.report-table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--gray-color);
+  padding: 0.75rem 1.25rem;
+}
+
+.report-table td {
+  padding: 0.75rem 1.25rem;
+  vertical-align: middle;
+}
+
+.report-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Filter Section */
+.filter-section {
+  background-color: var(--light-color);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+/* Budget vs Actual */
+.budget-bar {
+  height: 8px;
+  border-radius: 4px;
+  margin-top: 8px;
+  background-color: #e9ecef;
+  overflow: hidden;
+}
+
+.budget-progress {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.under-budget {
+  background-color: var(--success-color);
+}
+
+.over-budget {
+  background-color: var(--danger-color);
+}
+
+.near-budget {
+  background-color: var(--warning-color);
+}
+
+@media (max-width: 991.98px) {
+  .report-container {
+    padding: 1rem 0;
+  }
+
+  .filter-section {
+    padding: 1rem;
+  }
+
+  .report-card .card-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 0.6rem 0.75rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .filter-section .btn,
+  .report-card .btn {
+    width: 100%;
+  }
+
+  .report-table th:nth-child(5),
+  .report-table td:nth-child(5) {
+    display: none;
+  }
+}

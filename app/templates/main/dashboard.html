@@ -1,0 +1,393 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="h2 d-flex justify-content-between align-items-center">
+                Dashboard 
+                <span class="fs-5 badge bg-primary">{{ today.strftime('%B %Y') }}</span>
+            </h1>
+            <p class="lead text-muted">Welcome back, {{ current_user.first_name }}! Here's your financial overview.</p>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4 summary-section">
+        <div class="col-md-3">
+            <div class="summary-card income-card">
+                <div class="card-body">
+                    <h6 class="card-title">Total Income</h6>
+                    <h2 class="card-value">₹{{ total_income|round(2)|format_number }}</h2>
+                    <p class="card-period">Current Month</p>
+                    <i class="fas fa-money-bill-wave summary-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card expense-card">
+                <div class="card-body">
+                    <h6 class="card-title">Total Expenses</h6>
+                    <h2 class="card-value">₹{{ total_expense|round(2)|format_number }}</h2>
+                    <p class="card-period">Current Month</p>
+                    <i class="fas fa-credit-card summary-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card balance-card">
+                <div class="card-body">
+                    <h6 class="card-title">Balance</h6>
+                    <h2 class="card-value">₹{{ balance|round(2)|format_number }}</h2>
+                    <p class="card-period">Current Month</p>
+                    <i class="fas fa-balance-scale summary-icon"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card budget-card">
+                <div class="card-body">
+                    <h6 class="card-title">Savings Rate</h6>
+                    <h2 class="card-value">
+                        {% if total_income > 0 %}
+                            {{ ((total_income - total_expense) / total_income * 100)|round }}%
+                        {% else %}
+                            0%
+                        {% endif %}
+                    </h2>
+                    <p class="card-period">Current Month</p>
+                    <i class="fas fa-piggy-bank summary-icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card chart-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Expenses by Category</h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary time-filter" data-period="week">Week</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary time-filter active" data-period="month">Month</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary time-filter" data-period="year">Year</button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if category_chart %}
+                <div id="category-chart" style="height: 300px;"></div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        try {
+                            const categoryData = JSON.parse('{{ category_chart|safe }}');
+                            
+                            // Enhanced chart with better styling
+                            const updatedLayout = {
+                                ...categoryData.layout,
+                                margin: { t: 10, b: 10, l: 10, r: 10 },
+                                legend: { 
+                                    orientation: 'h', 
+                                    y: -0.2,
+                                    xanchor: 'center',
+                                    x: 0.5
+                                },
+                                paper_bgcolor: 'rgba(0,0,0,0)',
+                                plot_bgcolor: 'rgba(0,0,0,0)',
+                                font: {
+                                    family: 'Segoe UI, sans-serif'
+                                }
+                            };
+                            
+                            // Update data for better visuals
+                            const updatedData = categoryData.data.map(trace => {
+                                return {
+                                    ...trace,
+                                    hole: 0.5,
+                                    textinfo: 'label+percent',
+                                    textposition: 'outside',
+                                    textfont: {
+                                        size: 12,
+                                        color: '#212529'
+                                    },
+                                    insidetextorientation: 'radial'
+                                };
+                            });
+                            
+                            // Create chart with proper options
+                            Plotly.newPlot('category-chart', updatedData, updatedLayout, {
+                                responsive: true,
+                                displayModeBar: false
+                            });
+                            
+                            // Handle resize events
+                            window.addEventListener('resize', function() {
+                                Plotly.relayout('category-chart', {
+                                    'xaxis.autorange': true,
+                                    'yaxis.autorange': true
+                                });
+                            });
+                        } catch (e) {
+                            console.error("Error rendering expense category chart:", e);
+                            document.getElementById('category-chart').innerHTML = 
+                                '<div class="alert alert-warning">Error rendering chart. Please try again later.</div>';
+                        }
+                    });
+                </script>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="py-4">
+                        <i class="fas fa-chart-pie fa-4x text-muted mb-3"></i>
+                        <p class="lead text-muted">No expense data available for this period</p>
+                        <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-primary mt-2">Add an Expense</a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card chart-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Income vs Expense</h5>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-sm btn-outline-secondary chart-type active" data-type="bar">Bar</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary chart-type" data-type="line">Trend</button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if total_income > 0 or total_expense > 0 %}
+                <div id="income-expense-chart" style="height: 300px;"></div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        try {
+                            const incomeExpenseData = JSON.parse('{{ income_expense_chart|safe }}');
+                            
+                            // Enhanced chart with better styling
+                            const updatedLayout = {
+                                ...incomeExpenseData.layout,
+                                margin: { t: 10, b: 40, l: 50, r: 10 },
+                                paper_bgcolor: 'rgba(0,0,0,0)',
+                                plot_bgcolor: 'rgba(0,0,0,0)',
+                                barmode: 'group',
+                                bargap: 0.2,
+                                legend: { 
+                                    orientation: 'h', 
+                                    y: -0.2,
+                                    xanchor: 'center',
+                                    x: 0.5
+                                },
+                                font: {
+                                    family: 'Segoe UI, sans-serif'
+                                },
+                                yaxis: {
+                                    gridcolor: 'rgba(0,0,0,0.05)',
+                                    zerolinecolor: 'rgba(0,0,0,0.1)'
+                                }
+                            };
+                            
+                            // Update data for better visuals
+                            const updatedData = incomeExpenseData.data.map(trace => {
+                                return {
+                                    ...trace,
+                                    marker: {
+                                        ...trace.marker,
+                                        line: { width: 1, color: 'white' },
+                                        opacity: 0.8
+                                    }
+                                };
+                            });
+                            
+                            // Create chart with proper options
+                            Plotly.newPlot('income-expense-chart', updatedData, updatedLayout, {
+                                responsive: true,
+                                displayModeBar: false
+                            });
+                            
+                            // Handle resize events
+                            window.addEventListener('resize', function() {
+                                Plotly.relayout('income-expense-chart', {
+                                    'xaxis.autorange': true,
+                                    'yaxis.autorange': true
+                                });
+                            });
+                            
+                            // Handle chart type toggle
+                            document.querySelectorAll('.chart-type').forEach(button => {
+                                button.addEventListener('click', function() {
+                                    // Update active state
+                                    document.querySelectorAll('.chart-type').forEach(btn => btn.classList.remove('active'));
+                                    this.classList.add('active');
+                                    
+                                    const chartType = this.dataset.type;
+                                    if (chartType === 'line') {
+                                        Plotly.restyle('income-expense-chart', {'type': 'scatter', 'mode': 'lines+markers'});
+                                    } else {
+                                        Plotly.restyle('income-expense-chart', {'type': 'bar', 'mode': null});
+                                    }
+                                });
+                            });
+                        } catch (e) {
+                            console.error("Error rendering income vs expense chart:", e);
+                            document.getElementById('income-expense-chart').innerHTML = 
+                                '<div class="alert alert-warning">Error rendering chart. Please try again later.</div>';
+                        }
+                    });
+                </script>
+                {% else %}
+                <div class="text-center py-5">
+                    <div class="py-4">
+                        <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                        <p class="lead text-muted">No income or expense data available</p>
+                        <div class="mt-2">
+                            <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-danger me-2">Add Expense</a>
+                            <a href="{{ url_for('income.new_income') }}" class="btn btn-sm btn-success">Add Income</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card transaction-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Recent Expenses</h5>
+                    <p class="text-muted small mb-0">Last 7 days</p>
+                </div>
+                <a href="{{ url_for('expense.expenses') }}" class="btn btn-sm btn-outline-danger">
+                    <i class="fas fa-external-link-alt me-1"></i> View All
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table transaction-table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for expense in last_expenses %}
+                            <tr>
+                                <td>
+                                    <div class="transaction-date-small">
+                                        <span>{{ expense.date.strftime('%b %d') }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('expense.expense_detail', expense_id=expense.id) }}" class="text-reset text-decoration-none">
+                                        <div class="fw-medium text-truncate" style="max-width: 150px;">{{ expense.description }}</div>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ expense.category.name if expense.category else 'Uncategorized' }}
+                                    </span>
+                                </td>
+                                <td class="text-end text-danger fw-medium">-₹{{ expense.amount|round(2)|format_number }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="py-3">
+                                        <i class="fas fa-receipt fa-2x text-muted mb-3"></i>
+                                        <p class="text-muted mb-1">No recent expenses</p>
+                                        <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-danger mt-2">
+                                            <i class="fas fa-plus me-1"></i> Add Expense
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if last_expenses %}
+            <div class="card-footer text-end p-2">
+                <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-danger">
+                    <i class="fas fa-plus me-1"></i> New Expense
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card transaction-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-0">Recent Income</h5>
+                    <p class="text-muted small mb-0">Last 7 days</p>
+                </div>
+                <a href="{{ url_for('income.incomes') }}" class="btn btn-sm btn-outline-success">
+                    <i class="fas fa-external-link-alt me-1"></i> View All
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table transaction-table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Source</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for income in last_incomes %}
+                            <tr>
+                                <td>
+                                    <div class="transaction-date-small">
+                                        <span>{{ income.date.strftime('%b %d') }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('income.income_detail', income_id=income.id) }}" class="text-reset text-decoration-none">
+                                        <div class="fw-medium text-truncate" style="max-width: 150px;">{{ income.description }}</div>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {{ income.source }}
+                                    </span>
+                                </td>
+                                <td class="text-end text-success fw-medium">+₹{{ income.amount|round(2)|format_number }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="py-3">
+                                        <i class="fas fa-hand-holding-usd fa-2x text-muted mb-3"></i>
+                                        <p class="text-muted mb-1">No recent income</p>
+                                        <a href="{{ url_for('income.new_income') }}" class="btn btn-sm btn-success mt-2">
+                                            <i class="fas fa-plus me-1"></i> Add Income
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if last_incomes %}
+            <div class="card-footer text-end p-2">
+                <a href="{{ url_for('income.new_income') }}" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus me-1"></i> New Income
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

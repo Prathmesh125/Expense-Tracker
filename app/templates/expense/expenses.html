@@ -1,0 +1,404 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="expense-container">
+    <div class="page-header">
+        <div>
+            <h1 class="h2">Expenses</h1>
+            <p class="text-muted mb-0">Track and manage your spending</p>
+        </div>
+        <div>
+            <a href="{{ url_for('expense.new_expense') }}" class="btn btn-danger">
+                <i class="fas fa-plus me-2"></i>Add New Expense
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-section mb-4">
+        <form action="{{ url_for('expense.expenses') }}" method="GET" id="filterForm">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Filter by Date</label>
+                    <select class="form-select form-select-sm" name="date_filter" id="dateFilter" onchange="handleDateFilterChange(this);">
+                        <option value="all" {% if request.args.get('date_filter') == 'all' or not request.args.get('date_filter') %}selected{% endif %}>All Time</option>
+                        <option value="this_month" {% if request.args.get('date_filter') == 'this_month' %}selected{% endif %}>This Month</option>
+                        <option value="last_month" {% if request.args.get('date_filter') == 'last_month' %}selected{% endif %}>Last Month</option>
+                        <option value="this_year" {% if request.args.get('date_filter') == 'this_year' %}selected{% endif %}>This Year</option>
+                        <option value="last_year" {% if request.args.get('date_filter') == 'last_year' %}selected{% endif %}>Last Year</option>
+                        <option value="custom" {% if request.args.get('date_filter') == 'custom' %}selected{% endif %}>Custom Range</option>
+                    </select>
+                    
+                    <div class="row mt-2 {% if request.args.get('date_filter') != 'custom' %}d-none{% endif %}" id="dateRangeInputs">
+                        <div class="col-6">
+                            <label class="form-label small text-muted">Start Date</label>
+                            <input type="date" class="form-control form-control-sm" name="start_date" value="{{ request.args.get('start_date', '') }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small text-muted">End Date</label>
+                            <input type="date" class="form-control form-control-sm" name="end_date" value="{{ request.args.get('end_date', '') }}">
+                        </div>
+                        <!-- The Apply Filter button will be added here via JavaScript -->
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small text-muted">Filter by Category</label>
+                    <select class="form-select form-select-sm" name="category_id" onchange="document.getElementById('filterForm').submit();">
+                        <option value="" {% if not request.args.get('category_id') %}selected{% endif %}>All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if request.args.get('category_id')|int == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">Search</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" class="form-control" name="search" id="searchInput" placeholder="Search expenses..." value="{{ request.args.get('search', '') }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end gap-2">
+                    {% if request.args.get('date_filter') or request.args.get('category_id') or request.args.get('search') %}
+                    <a href="{{ url_for('expense.expenses') }}" class="btn btn-sm btn-outline-secondary" title="Clear all filters">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </a>
+                    {% endif %}
+                    <a href="{{ url_for('expense.categories') }}" class="btn btn-sm btn-outline-secondary flex-grow-1">
+                        <i class="fas fa-tags me-1"></i>Categories
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="expense-card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Your Expenses</h5>
+            <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-outline-secondary active">
+                    <i class="fas fa-list me-1"></i>List
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-chart-bar me-1"></i>Chart
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table expense-table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for expense in expenses.items %}
+                        <tr>
+                            <td>
+                                <span class="expense-date">{{ expense.date.strftime('%b %d, %Y') }}</span>
+                            </td>
+                                                    <td>
+                                <span class="category-badge">
+                                    {{ expense.category.name if expense.category else 'Uncategorized' }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-medium">
+                                    {{ expense.description[:30] + '...' if expense.description and expense.description|length > 30 else expense.description }}
+                                </div>
+                                <small class="text-muted">{{ expense.notes[:50] + '...' if expense.notes and expense.notes|length > 50 else expense.notes }}</small>
+                            </td>
+                            <td class="text-end">
+                                <span class="fw-bold text-danger">
+                                    ₹{{ expense.amount|round(2)|format_number }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center">
+                                    <a href="{{ url_for('expense.expense_detail', expense_id=expense.id) }}" class="action-btn btn btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('expense.update_expense', expense_id=expense.id) }}" class="action-btn btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="action-btn btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ expense.id }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Delete Confirmation Modal -->
+                                <div class="modal fade" id="deleteModal{{ expense.id }}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="text-center mb-3">
+                                                    <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                                                    <h5>Are you sure you want to delete this expense?</h5>
+                                                    <p class="text-muted">{{ expense.description }} - ₹{{ expense.amount|round(2)|format_number }}</p>
+                                                </div>
+                                                <p class="text-danger small text-center">This action cannot be undone.</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('expense.delete_expense', expense_id=expense.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-trash me-1"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="py-4">
+                                    <i class="fas fa-receipt fa-4x text-muted mb-3"></i>
+                                    <p class="lead text-muted mb-3">No expenses found</p>
+                                    <a href="{{ url_for('expense.new_expense') }}" class="btn btn-primary">
+                                        <i class="fas fa-plus me-2"></i>Add Your First Expense
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        {% if expenses.items %}
+        <div class="card-footer d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                Showing {{ expenses.items|length }} of {{ expenses.total }} expenses
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-sm mb-0">
+                    {% for page_num in expenses.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if expenses.page == page_num %}
+                            <li class="page-item active">
+                                <a class="page-link" href="{{ url_for('expense.expenses', 
+                                    page=page_num, 
+                                    date_filter=request.args.get('date_filter', 'all'),
+                                    start_date=request.args.get('start_date', ''),
+                                    end_date=request.args.get('end_date', ''),
+                                    category_id=request.args.get('category_id', ''),
+                                    search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('expense.expenses', 
+                                    page=page_num, 
+                                    date_filter=request.args.get('date_filter', 'all'),
+                                    start_date=request.args.get('start_date', ''),
+                                    end_date=request.args.get('end_date', ''),
+                                    category_id=request.args.get('category_id', ''),
+                                    search=request.args.get('search', '')) }}">{{ page_num }}</a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card expense-stat-card {% if request.args.get('date_filter') != 'all' and request.args.get('date_filter') %}filtered-stats{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total: {{ period_title }}</h6>
+                            <h4 class="mb-0 text-danger">₹{{ filtered_total|default(0)|round(2)|format_number }}</h4>
+                        </div>
+                        <div class="stat-icon bg-danger-subtle text-danger">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card expense-stat-card {% if request.args.get('date_filter') != 'all' and request.args.get('date_filter') %}filtered-stats{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Average Per Day</h6>
+                            <h4 class="mb-0 text-primary">₹{{ daily_avg|default(0)|round(2)|format_number }}</h4>
+                        </div>
+                        <div class="stat-icon bg-primary-subtle text-primary">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card expense-stat-card {% if request.args.get('date_filter') != 'all' and request.args.get('date_filter') or request.args.get('category_id') %}filtered-stats{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Highest Expense</h6>
+                            <h4 class="mb-0 text-warning">₹{{ highest_expense|default(0)|round(2)|format_number }}</h4>
+                        </div>
+                        <div class="stat-icon bg-warning-subtle text-warning">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card expense-stat-card {% if request.args.get('category_id') %}filtered-stats{% endif %}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">Total Categories</h6>
+                            <h4 class="mb-0 text-success">{{ total_categories|default(0) }}</h4>
+                        </div>
+                        <div class="stat-icon bg-success-subtle text-success">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function handleDateFilterChange(selectElement) {
+        const dateRangeInputs = document.getElementById('dateRangeInputs');
+        if (selectElement.value === 'custom') {
+            dateRangeInputs.classList.remove('d-none');
+            // Don't submit form automatically for custom - wait for dates
+        } else {
+            dateRangeInputs.classList.add('d-none');
+            // Submit form for non-custom filters
+            document.getElementById('filterForm').submit();
+        }
+    }
+
+    // Add event listener for custom range inputs
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('filterForm');
+        const dateFilter = document.getElementById('dateFilter');
+        const startDateInput = form.querySelector('[name="start_date"]');
+        const endDateInput = form.querySelector('[name="end_date"]');
+        const searchInput = document.getElementById('searchInput');
+        
+        // Create a submit button for custom range
+        const submitButton = document.createElement('button');
+        submitButton.type = 'button';
+        submitButton.className = 'btn btn-sm btn-primary mt-2';
+        submitButton.innerText = 'Apply Filter';
+        submitButton.style.width = '100%';
+        submitButton.id = 'applyCustomDateFilter';
+        
+        // Add the button to the dateRangeInputs div
+        const dateRangeInputs = document.getElementById('dateRangeInputs');
+        if (!document.getElementById('applyCustomDateFilter')) {
+            dateRangeInputs.appendChild(submitButton);
+        }
+        
+        // Set initial dates if not already set
+        if (dateFilter.value === 'custom' && !startDateInput.value && !endDateInput.value) {
+            // Default to current month if no dates set
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            // Format as YYYY-MM-DD
+            startDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
+            endDateInput.value = lastDayOfMonth.toISOString().split('T')[0];
+        }
+        
+        // Add change event listeners to date inputs
+        startDateInput.addEventListener('change', function() {
+            if (endDateInput.value && new Date(startDateInput.value) > new Date(endDateInput.value)) {
+                endDateInput.value = startDateInput.value;
+            }
+        });
+        
+        endDateInput.addEventListener('change', function() {
+            if (startDateInput.value && new Date(endDateInput.value) < new Date(startDateInput.value)) {
+                startDateInput.value = endDateInput.value;
+            }
+        });
+        
+        // Handle click event for the custom date filter button
+        submitButton.addEventListener('click', function() {
+            if (!startDateInput.value || !endDateInput.value) {
+                alert('Please select both start and end dates for custom range.');
+                return;
+            }
+            form.submit();
+        });
+
+        // Handle form submission validation
+        form.addEventListener('submit', function(e) {
+            if (dateFilter.value === 'custom') {
+                if (!startDateInput.value || !endDateInput.value) {
+                    e.preventDefault();
+                    alert('Please select both start and end dates for custom range.');
+                }
+            }
+        });
+        
+        // Ensure search preserves date filters when submitting
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                
+                // Validate custom date filter if active
+                if (dateFilter.value === 'custom') {
+                    if (!startDateInput.value || !endDateInput.value) {
+                        alert('Please select both start and end dates for custom range.');
+                        return;
+                    }
+                }
+                
+                form.submit();
+            }
+        });
+        
+        // Add a clear filters button
+        const filterSection = document.querySelector('.filter-section');
+        const clearButton = document.createElement('button');
+        clearButton.type = 'button';
+        clearButton.className = 'btn btn-sm btn-outline-secondary mt-4';
+        clearButton.innerText = 'Clear All Filters';
+        clearButton.style.marginLeft = '15px';
+        
+        clearButton.addEventListener('click', function() {
+            window.location.href = "{{ url_for('expense.expenses') }}";
+        });
+        
+        filterSection.appendChild(clearButton);
+    });
+</script>
+{% endblock %}

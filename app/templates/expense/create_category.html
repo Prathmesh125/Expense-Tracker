@@ -1,0 +1,159 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="expense-container">
+    <div class="page-header">
+        <div>
+            <h1 class="h2">Add New Category</h1>
+            <p class="text-muted mb-0">Create a category to organize your expenses</p>
+        </div>
+        <div>
+            <a href="{{ url_for('expense.categories') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Categories
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="expense-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="expense-icon-circle primary-bg me-3">
+                            <i class="fas fa-folder-plus text-white"></i>
+                        </div>
+                        <h5 class="mb-0">Category Details</h5>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                        <i class="fas fa-tag me-1"></i>New Category
+                    </span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-4">
+                            {{ form.name.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="fas fa-tag"></i>
+                                </span>
+                                {% if form.name.errors %}
+                                    {{ form.name(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.name.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.name(class="form-control", placeholder="Enter category name") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1 text-muted"></i>
+                                Choose a clear, descriptive name for your category
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-secondary text-white">
+                                    <i class="fas fa-align-left"></i>
+                                </span>
+                                {% if form.description.errors %}
+                                    {{ form.description(class="form-control is-invalid", rows="4") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.description.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.description(class="form-control", rows="4", placeholder="Category description (optional)") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1 text-muted"></i>
+                                Add details about what expenses belong in this category
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-5">
+                            <a href="{{ url_for('expense.categories') }}" class="btn btn-light px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            {{ form.submit(class="btn btn-primary btn-submit-category px-5") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex align-items-center text-muted small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span>Categories help you organize your expenses for better financial tracking</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips and information sidebar -->
+        <div class="col-md-4">
+            <div class="expense-card">
+                <div class="card-header d-flex align-items-center">
+                    <div class="expense-icon-circle warning-bg me-2">
+                        <i class="fas fa-lightbulb text-white"></i>
+                    </div>
+                    <h5 class="mb-0">Category Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tip-item mb-4">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon primary-bg me-3">
+                                <i class="fas fa-folder-open text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Effective Categories</h6>
+                                <p class="text-muted small">Create clear, specific categories like "Groceries," "Transportation," or "Entertainment" to track spending accurately.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item mb-4">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon success-bg me-3">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Reporting Benefits</h6>
+                                <p class="text-muted small">Well-organized categories make your expense reports and charts more meaningful.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon danger-bg me-3">
+                                <i class="fas fa-list-ul text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Category Examples</h6>
+                                <ul class="text-muted small mb-0 ps-3">
+                                    <li>Housing & Utilities</li>
+                                    <li>Food & Dining</li>
+                                    <li>Transportation</li>
+                                    <li>Entertainment</li>
+                                    <li>Health & Medical</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-center">
+                        <span class="badge bg-primary-subtle text-primary px-3 py-2">
+                            <i class="fas fa-folder-tree me-1"></i> Well-organized finances start with good categories
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

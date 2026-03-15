@@ -1,0 +1,212 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="h2">Custom Reports</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <div class="btn-group">
+            <a href="{{ url_for('reports.monthly_report') }}" class="btn btn-outline-primary">
+                <i class="fas fa-chart-bar me-1"></i> Monthly Report
+            </a>
+            <a href="{{ url_for('reports.budget_report') }}" class="btn btn-outline-primary">
+                <i class="fas fa-balance-scale me-1"></i> Budget Report
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Date Range Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Select Date Range</h5>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="mb-3">
+                        {{ form.start_date.label(class="form-label") }}
+                        {{ form.start_date(class="form-control datepicker", type="date") }}
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="mb-3">
+                        {{ form.end_date.label(class="form-label") }}
+                        {{ form.end_date(class="form-control datepicker", type="date") }}
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="mb-3 w-100">
+                        {{ form.submit(class="btn btn-primary w-100") }}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase">Total Income</h6>
+                        <h2 class="mb-0">₹{{ total_income|round(2) }}</h2>
+                    </div>
+                    <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
+                </div>
+                <div class="mt-2">
+                    <small>{{ start_date }} to {{ end_date }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase">Total Expenses</h6>
+                        <h2 class="mb-0">₹{{ total_expense|round(2) }}</h2>
+                    </div>
+                    <i class="fas fa-credit-card fa-3x opacity-50"></i>
+                </div>
+                <div class="mt-2">
+                    <small>{{ start_date }} to {{ end_date }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card {% if balance >= 0 %}bg-success{% else %}bg-warning{% endif %} text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="text-uppercase">Balance</h6>
+                        <h2 class="mb-0">₹{{ balance|round(2) }}</h2>
+                    </div>
+                    <i class="fas fa-balance-scale fa-3x opacity-50"></i>
+                </div>
+                <div class="mt-2">
+                    <small>{{ start_date }} to {{ end_date }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Expenses by Category</h5>
+            </div>
+            <div class="card-body">
+                {% if category_chart %}
+                <div id="category-chart"></div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        try {
+                            // Store chart data as a variable to avoid template parsing issues
+                            const categoryChartData = '{{ category_chart|safe }}';
+                            const categoryData = JSON.parse(categoryChartData);
+                            
+                            Plotly.newPlot('category-chart', categoryData.data, categoryData.layout, {
+                                responsive: true,
+                                displayModeBar: false
+                            });
+                            
+                            // Handle resize events
+                            window.addEventListener('resize', function() {
+                                Plotly.relayout('category-chart', {
+                                    'xaxis.autorange': true,
+                                    'yaxis.autorange': true
+                                });
+                            });
+                        } catch (e) {
+                            console.error("Error rendering expense category chart:", e);
+                            document.getElementById('category-chart').innerHTML = 
+                                '<div class="alert alert-warning">Error rendering chart. Please try again later.</div>';
+                        }
+                    });
+                </script>
+                {% else %}
+                <div class="text-center py-5">
+                    <p class="text-muted">No expense data available for this period</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Daily Income vs Expense</h5>
+            </div>
+            <div class="card-body">
+                <div id="time-chart"></div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        try {
+                            // Store chart data as a variable to avoid template parsing issues
+                            const timeChartData = '{{ time_chart|safe }}';
+                            const timeData = JSON.parse(timeChartData);
+                            
+                            Plotly.newPlot('time-chart', timeData.data, timeData.layout, {
+                                responsive: true,
+                                displayModeBar: false
+                            });
+                            
+                            // Handle resize events
+                            window.addEventListener('resize', function() {
+                                Plotly.relayout('time-chart', {
+                                    'xaxis.autorange': true,
+                                    'yaxis.autorange': true
+                                });
+                            });
+                        } catch (e) {
+                            console.error("Error rendering time series chart:", e);
+                            document.getElementById('time-chart').innerHTML = 
+                                '<div class="alert alert-warning">Error rendering chart. Please try again later.</div>';
+                        }
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Export Options -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Export Report</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p>Export this report in different formats:</p>
+            </div>
+            <div class="col-md-8">
+                <div class="btn-group">
+                    <button class="btn btn-outline-secondary disabled">
+                        <i class="fas fa-file-pdf me-1"></i> PDF
+                    </button>
+                    <button class="btn btn-outline-secondary disabled">
+                        <i class="fas fa-file-excel me-1"></i> Excel
+                    </button>
+                    <button class="btn btn-outline-secondary disabled">
+                        <i class="fas fa-file-csv me-1"></i> CSV
+                    </button>
+                </div>
+                <small class="d-block mt-2 text-muted">Export functionality will be available in future updates.</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

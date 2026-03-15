@@ -1,0 +1,129 @@
+/* Main Styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.footer {
+    flex-shrink: 0;
+}
+
+/* Card Styles */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 0.25rem;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Navigation - Basic styles moved to navbar.css */
+
+/* Table Styles */
+.table th {
+    font-weight: 600;
+}
+
+/* Chart Containers */
+.chart-container {
+    min-height: 300px;
+}
+
+/* Form Styles */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Pagination */
+.page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Custom Colors */
+.bg-income {
+    background-color: #28a745;
+}
+
+.bg-expense {
+    background-color: #dc3545;
+}
+
+.text-income {
+    color: #28a745;
+}
+
+.text-expense {
+    color: #dc3545;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991.98px) {
+    main.app-main.container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .chart-container {
+        min-height: 250px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    main.app-main.container {
+        margin-top: 1rem !important;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+        border-radius: 0.85rem;
+    }
+
+    .table-responsive {
+        border-radius: 0.75rem;
+    }
+
+    .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+
+    .btn-group > .btn {
+        border-radius: 0.5rem !important;
+        flex: 1 1 auto;
+    }
+}

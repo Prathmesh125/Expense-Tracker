@@ -1,0 +1,199 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="income-container">
+    <div class="page-header">
+        <div>
+            <h1 class="h2">{{ legend }}</h1>
+            <p class="text-muted mb-0">Record your earnings to track your financial growth</p>
+        </div>
+        <div>
+            <a href="{{ url_for('income.incomes') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Income
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="income-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="income-icon-circle success-bg me-3">
+                            <i class="fas fa-plus text-white"></i>
+                        </div>
+                        <h5 class="mb-0">Income Details</h5>
+                    </div>
+                    <span class="badge bg-success-subtle text-success px-3 py-2">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ form.date.data.strftime('%b %d, %Y') if form.date.data else 'Today' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="" onsubmit="return validateIncomeForm()">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-4">
+                            {{ form.amount.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white">₹</span>
+                                {% if form.amount.errors %}
+                                    {{ form.amount(class="form-control is-invalid", id="amount", placeholder="0.00") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.amount.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.amount(class="form-control", id="amount", placeholder="0.00") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Enter the amount received</div>
+                        </div>
+                        <div class="mb-4">
+                            {{ form.source.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="fas fa-briefcase"></i>
+                                </span>
+                                {% if form.source.errors %}
+                                    {{ form.source(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.source.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.source(class="form-control", placeholder="Income source (e.g., Salary, Freelancing)") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Specify the source of this income</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-secondary text-white">
+                                    <i class="fas fa-align-left"></i>
+                                </span>
+                                {% if form.description.errors %}
+                                    {{ form.description(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.description.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.description(class="form-control", rows="3", placeholder="Description of income") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Add details about this income (optional)</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.date.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-info text-white">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                                {% if form.date.errors %}
+                                    {{ form.date(class="form-control datepicker is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.date.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.date(class="form-control datepicker", type="date") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">When was this income received?</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <a href="{{ url_for('income.incomes') }}" class="btn btn-light px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            {{ form.submit(class="btn btn-success px-5 btn-submit-income") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex align-items-center text-muted small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span>All fields marked with * are required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tips and information sidebar -->
+        <div class="col-md-4">
+            <div class="income-card">
+                <div class="card-header d-flex align-items-center">
+                    <div class="income-icon-circle warning-bg me-2">
+                        <i class="fas fa-lightbulb text-white"></i>
+                    </div>
+                    <h5 class="mb-0">Income Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tip-item mb-4">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon primary-bg me-3">
+                                <i class="fas fa-tag text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Sources</h6>
+                                <p class="text-muted small">Categorize your income by source to track where your money comes from consistently.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item mb-4">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon success-bg me-3">
+                                <i class="fas fa-chart-bar text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Track Trends</h6>
+                                <p class="text-muted small">Regular income tracking helps identify trends and opportunities to increase your earnings.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon info-bg me-3">
+                                <i class="fas fa-balance-scale text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Budget Better</h6>
+                                <p class="text-muted small mb-0">Accurate income records help create realistic budgets and savings goals.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-center">
+                        <span class="badge bg-success-subtle text-success px-3 py-2">
+                            <i class="fas fa-hand-holding-dollar me-1"></i> Income for {{ form.date.data.strftime('%B %Y') if form.date.data else today.strftime('%B %Y') }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form validation script -->
+<script>
+function validateIncomeForm() {
+    const amountField = document.getElementById('amount');
+    
+    if (!amountField || amountField.value <= 0) {
+        alert('Please enter a valid amount greater than zero.');
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

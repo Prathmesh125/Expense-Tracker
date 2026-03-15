@@ -1,0 +1,200 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="expense-container">
+    <div class="page-header">
+        <div>
+            <h1 class="h2">{{ legend }}</h1>
+            <p class="text-muted mb-0">Add a new expense to track your spending</p>
+        </div>
+        <div>
+            <a href="{{ url_for('expense.expenses') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Expenses
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="expense-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="expense-icon-circle danger-bg me-3">
+                            <i class="fas fa-receipt text-white"></i>
+                        </div>
+                        <h5 class="mb-0">Expense Details</h5>
+                    </div>
+                    <span class="badge bg-danger-subtle text-danger px-3 py-2">
+                        <i class="fas fa-calendar-alt me-1"></i>{{ form.date.data.strftime('%b %d, %Y') if form.date.data else 'Today' }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="" onsubmit="return validateExpenseForm()">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-4">
+                            {{ form.amount.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-danger text-white">₹</span>
+                                {% if form.amount.errors %}
+                                    {{ form.amount(class="form-control is-invalid", id="amount", placeholder="0.00") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.amount.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.amount(class="form-control", id="amount", placeholder="0.00") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Enter the amount spent</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.category.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-primary text-white">
+                                    <i class="fas fa-tag"></i>
+                                </span>
+                                {% if form.category.errors %}
+                                    {{ form.category(class="form-select is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.category.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.category(class="form-select") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Choose a category for this expense</div>
+                        </div>
+
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-secondary text-white">
+                                    <i class="fas fa-align-left"></i>
+                                </span>
+                                {% if form.description.errors %}
+                                    {{ form.description(class="form-control is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.description.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.description(class="form-control", rows="3", placeholder="What was this expense for?") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">Add details about this expense</div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.date.label(class="form-label fw-medium") }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-success text-white">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                                {% if form.date.errors %}
+                                    {{ form.date(class="form-control datepicker is-invalid") }}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.date.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {{ form.date(class="form-control datepicker", type="date") }}
+                                {% endif %}
+                            </div>
+                            <div class="form-text">When was this expense incurred?</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-5">
+                            <a href="{{ url_for('expense.expenses') }}" class="btn btn-light px-4">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            {{ form.submit(class="btn btn-danger px-5 btn-submit-expense") }}
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex align-items-center text-muted small">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <span>All fields marked with * are required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips and information sidebar -->
+        <div class="col-md-4">
+            <div class="expense-card">
+                <div class="card-header d-flex align-items-center">
+                    <div class="expense-icon-circle warning-bg me-2">
+                        <i class="fas fa-lightbulb text-white"></i>
+                    </div>
+                    <h5 class="mb-0">Quick Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tip-item mb-4">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon primary-bg me-3">
+                                <i class="fas fa-tags text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Categories</h6>
+                                <p class="text-muted small">Categorize your expenses to better track your spending habits and identify areas to save.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item mb-4">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon success-bg me-3">
+                                <i class="fas fa-file-invoice text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Descriptions</h6>
+                                <p class="text-muted small">Add detailed descriptions to help you remember what each expense was for when reviewing later.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tip-item">
+                        <div class="d-flex mb-2">
+                            <div class="tip-icon danger-bg me-3">
+                                <i class="fas fa-chart-pie text-white"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1">Budget Insights</h6>
+                                <p class="text-muted small mb-0">Adding expenses regularly helps generate accurate spending insights on your dashboard.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <a href="{{ url_for('expense.new_category') }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-plus-circle me-1"></i> Create New Category
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form validation script -->
+<script>
+function validateExpenseForm() {
+    const amountField = document.getElementById('amount');
+    
+    if (!amountField || amountField.value <= 0) {
+        alert('Please enter a valid amount greater than zero.');
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

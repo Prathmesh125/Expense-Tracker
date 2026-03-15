@@ -1,0 +1,189 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="expense-container">
+    <div class="page-header">
+        <div>
+            <h1 class="h2">Expense Detail</h1>
+            <p class="text-muted mb-0">View complete expense information</p>
+        </div>
+        <div>
+            <a href="{{ url_for('expense.expenses') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Expenses
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="expense-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="expense-icon me-3">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <h5 class="mb-0">{{ expense.description }}</h5>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{{ url_for('expense.update_expense', expense_id=expense.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <span class="detail-label">Date</span>
+                                <h5 class="detail-value">{{ expense.date.strftime('%B %d, %Y') }}</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item text-md-end">
+                                <span class="detail-label">Amount</span>
+                                <h5 class="detail-value text-danger">₹{{ expense.amount|round(2)|format_number }}</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <span class="detail-label">Category</span>
+                                <h5 class="detail-value">
+                                    <span class="category-badge-lg">
+                                        <i class="fas fa-tag me-1"></i>
+                                        {{ expense.category.name if expense.category else 'Uncategorized' }}
+                                    </span>
+                                </h5>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item text-md-end">
+                                <span class="detail-label">Created</span>
+                                <p class="detail-value">{{ expense.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <span class="detail-label">Description</span>
+                                <p class="detail-value">{{ expense.description or 'No description provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if expense.notes %}
+                    <div class="row mb-0">
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <span class="detail-label">Notes</span>
+                                <p class="detail-value">{{ expense.notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if expense.image_url %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <span class="detail-label">Receipt</span>
+                                <div class="receipt-image mt-2">
+                                    <img src="{{ expense.image_url }}" alt="Receipt" class="img-fluid rounded">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Transaction ID: {{ expense.id }}</small>
+                        {% if expense.updated_at and expense.updated_at != expense.created_at %}
+                        <small class="text-muted">Last updated: {{ expense.updated_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Related Expenses -->
+            <div class="expense-card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Similar Expenses</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table expense-table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if similar_expenses %}
+                                    {% for similar in similar_expenses %}
+                                    <tr>
+                                        <td>
+                                            <span class="expense-date">{{ similar.date.strftime('%b %d, %Y') }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="category-badge">{{ similar.category.name if similar.category else 'Uncategorized' }}</span>
+                                        </td>
+                                        <td class="text-danger">₹{{ similar.amount|round(2)|format_number }}</td>
+                                        <td class="text-end">
+                                            <a href="{{ url_for('expense.expense_detail', expense_id=similar.id) }}" class="btn btn-sm btn-outline-secondary">View</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-3">No similar expenses found.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                    <h5>Are you sure you want to delete this expense?</h5>
+                    <p class="text-muted">{{ expense.description }} - ₹{{ expense.amount|round(2)|format_number }}</p>
+                </div>
+                <p class="text-danger small">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('expense.delete_expense', expense_id=expense.id) }}" method="POST">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

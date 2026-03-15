@@ -1,0 +1,420 @@
+/* Enhanced income page styles */
+:root {
+  --primary-color: #4361ee;
+  --secondary-color: #3f37c9;
+  --success-color: #4cc9f0;
+  --danger-color: #f72585;
+  --warning-color: #f8961e;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --gray-color: #6c757d;
+  --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --transition-speed: 0.3s;
+}
+
+/* Filter indication */
+.filtered-stats {
+  position: relative;
+  overflow: hidden;
+}
+
+.filtered-stats::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background-color: var(--success-color);
+}
+
+/* Income Container */
+.income-container {
+  padding: 1.5rem 0;
+}
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Income Card */
+.income-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform var(--transition-speed);
+  margin-bottom: 2rem;
+}
+
+.income-card .card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+}
+
+.income-card .card-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 0.75rem 1.25rem;
+}
+
+/* Icon circles */
+.income-icon-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.primary-bg {
+  background-color: var(--primary-color);
+}
+
+.secondary-bg {
+  background-color: var(--secondary-color);
+}
+
+.success-bg {
+  background-color: var(--success-color);
+}
+
+.danger-bg {
+  background-color: var(--danger-color);
+}
+
+.warning-bg {
+  background-color: var(--warning-color);
+}
+
+/* Income Table */
+.income-table {
+  margin-bottom: 0;
+}
+
+.income-table th {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--gray-color);
+  padding: 0.75rem 1.25rem;
+}
+
+.income-table td {
+  padding: 0.75rem 1.25rem;
+  vertical-align: middle;
+}
+
+.income-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Income stats cards */
+.income-stat-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+  transition: transform var(--transition-speed);
+  height: 100%;
+}
+
+.income-stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.income-stat-card .card-body {
+  padding: 1.5rem;
+}
+
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.income-total-card {
+  background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+  color: white;
+}
+
+.income-avg-card {
+  background: linear-gradient(135deg, #4895ef 0%, #3f37c9 100%);
+  color: white;
+}
+
+.income-month-card {
+  background: linear-gradient(135deg, #f8961e 0%, #f3722c 100%);
+  color: white;
+}
+
+/* Filter Section */
+.filter-section {
+  background-color: var(--light-color);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--card-shadow);
+}
+
+/* Action buttons */
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-speed);
+  margin-right: 0.5rem;
+  padding: 0;
+}
+
+.action-btn:hover {
+  transform: translateY(-2px);
+}
+
+.action-btn-view {
+  background-color: var(--light-color);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+}
+
+.action-btn-edit {
+  background-color: var(--light-color);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+}
+
+.action-btn-delete {
+  background-color: var(--light-color);
+  color: var(--danger-color);
+  border: 1px solid var(--danger-color);
+}
+
+/* Income date */
+.income-date {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(76, 201, 240, 0.1);
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.5rem;
+  line-height: 1;
+}
+
+.date-day {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--success-color);
+}
+
+.date-month {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--gray-color);
+}
+
+/* Create Income Form Styling */
+.income-form-card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  overflow: hidden;
+}
+
+.income-form-card .card-header {
+  background-color: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 1.25rem;
+}
+
+.income-form-card .card-body {
+  padding: 1.75rem;
+}
+
+.income-form-card .form-label {
+  font-weight: 500;
+  color: var(--dark-color);
+  margin-bottom: 0.5rem;
+}
+
+.income-form-card .form-control {
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid #e9ecef;
+  transition: all var(--transition-speed);
+}
+
+.income-form-card .form-control:focus {
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  border-color: var(--primary-color);
+}
+
+.income-form-card .input-group-text {
+  border-top-left-radius: 0.5rem;
+  border-bottom-left-radius: 0.5rem;
+  border: none;
+  width: 45px;
+  justify-content: center;
+}
+
+.income-form-card .form-text {
+  color: var(--gray-color);
+  font-size: 0.8rem;
+  margin-top: 0.375rem;
+  margin-left: 0.375rem;
+}
+
+.btn-submit-income {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all var(--transition-speed);
+}
+
+.btn-submit-income:hover {
+  background-color: #41b9dc;
+  border-color: #41b9dc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(76, 201, 240, 0.2);
+}
+
+/* Tips section */
+.tip-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.tip-item {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding-bottom: 1rem;
+}
+
+.tip-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Card styles for tips */
+.bg-success-subtle {
+  background-color: rgba(76, 201, 240, 0.1);
+}
+
+/* Custom input styles */
+input[type="date"].form-control {
+  padding-right: 0.75rem;
+}
+
+@media (max-width: 991.98px) {
+  .income-container {
+    padding: 1rem 0;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .page-header > div:last-child {
+    width: 100%;
+  }
+
+  .page-header > div:last-child .btn {
+    width: 100%;
+  }
+
+  .filter-section {
+    padding: 1rem;
+  }
+
+  .filter-section .row > [class*="col-"] {
+    margin-bottom: 0.5rem;
+  }
+
+  .filter-section .col-md-4.d-flex.align-items-end {
+    align-items: stretch !important;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .filter-section .col-md-4.d-flex.align-items-end .btn {
+    flex: 1 1 100%;
+    margin-right: 0 !important;
+  }
+
+  .income-card .card-header {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .income-table th,
+  .income-table td {
+    padding: 0.6rem 0.75rem;
+    white-space: nowrap;
+  }
+
+  .card-footer.d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .income-stat-card .card-body {
+    padding: 1.1rem;
+  }
+
+  .card-value {
+    font-size: 1.65rem;
+    word-break: break-word;
+  }
+
+  .stat-icon {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 0;
+  }
+
+  .income-table th:nth-child(3),
+  .income-table td:nth-child(3) {
+    display: none;
+  }
+
+  .action-btn {
+    width: 36px;
+    height: 36px;
+    margin-right: 0.35rem;
+  }
+
+  #dateRangeInputs .col-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .income-form-card .d-flex.justify-content-between.mt-5 {
+    flex-direction: column-reverse;
+    gap: 0.75rem;
+  }
+
+  .income-form-card .d-flex.justify-content-between.mt-5 .btn,
+  .income-form-card .d-flex.justify-content-between.mt-5 input[type="submit"] {
+    width: 100%;
+  }
+}
