@@ -10,6 +10,15 @@ class Config:
         'mysql+pymysql://username:password@localhost/adms_expense'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # Database connection pool settings
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': int(os.environ.get('DB_POOL_SIZE', 10)),
+        'max_overflow': int(os.environ.get('DB_MAX_OVERFLOW', 20)),
+        'pool_timeout': int(os.environ.get('DB_POOL_TIMEOUT', 30)),
+        'pool_recycle': 3600,  # Recycle connections after 1 hour
+        'pool_pre_ping': True,  # Verify connections before using
+    }
+    
     # Flask-Mail settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER')
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
@@ -37,6 +46,18 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'mysql+pymysql://username:password@localhost/adms_expense'
+    
+    # Production-specific connection pool settings
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': int(os.environ.get('DB_POOL_SIZE', 20)),
+        'max_overflow': int(os.environ.get('DB_MAX_OVERFLOW', 40)),
+        'pool_timeout': int(os.environ.get('DB_POOL_TIMEOUT', 30)),
+        'pool_recycle': 1800,  # Recycle connections after 30 minutes
+        'pool_pre_ping': True,
+        'connect_args': {
+            'connect_timeout': 10
+        }
+    }
 
 config = {
     'development': DevelopmentConfig,
