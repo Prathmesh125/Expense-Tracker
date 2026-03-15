@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from app.models import Expense, Income, Category, Budget
 from app import db
@@ -127,3 +127,23 @@ def dashboard():
         last_expenses=last_expenses,
         last_incomes=last_incomes
     )
+
+@main.route('/health')
+def health_check():
+    """Health check endpoint for monitoring"""
+    try:
+        # Test database connection
+        db.session.execute(db.text('SELECT 1'))
+        db_status = 'healthy'
+    except Exception as e:
+        db_status = f'unhealthy: {str(e)}'
+    
+    health_data = {
+        'status': 'healthy' if db_status == 'healthy' else 'degraded',
+        'timestamp': datetime.utcnow().isoformat(),
+        'database': db_status,
+        'application': 'running'
+    }
+    
+    status_code = 200 if health_data['status'] == 'healthy' else 503
+    return jsonify(health_data), status_code
