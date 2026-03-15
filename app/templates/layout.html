@@ -12,6 +12,7 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+    {% block styles %}{% endblock %}
     {% if request.endpoint == 'main.dashboard' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     {% elif request.endpoint and request.endpoint.startswith('expense.') %}

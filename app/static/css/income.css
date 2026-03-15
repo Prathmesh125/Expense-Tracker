@@ -114,6 +114,21 @@
   background-color: rgba(0, 0, 0, 0.02);
 }
 
+.income-desc {
+  max-width: 260px;
+}
+
+/* Income detail page */
+.income-detail-page .card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+}
+
+.income-detail-actions {
+  gap: 0.25rem;
+}
+
 /* Income stats cards */
 .income-stat-card {
   border: none;
@@ -363,6 +378,23 @@ input[type="date"].form-control {
     gap: 0.75rem;
   }
 
+  .income-detail-page .row.mb-4:first-child {
+    gap: 0.75rem 0;
+  }
+
+  .income-detail-page .col-md-4.text-end {
+    text-align: left !important;
+  }
+
+  .income-detail-actions {
+    width: 100%;
+    display: flex;
+  }
+
+  .income-detail-actions .btn {
+    flex: 1 1 auto;
+  }
+
   .income-table th,
   .income-table td {
     padding: 0.6rem 0.75rem;
@@ -395,6 +427,10 @@ input[type="date"].form-control {
   .income-table th:nth-child(3),
   .income-table td:nth-child(3) {
     display: none;
+  }
+
+  .income-desc {
+    max-width: 130px;
   }
 
   .action-btn {

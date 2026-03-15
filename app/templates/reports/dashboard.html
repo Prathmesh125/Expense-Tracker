@@ -1,12 +1,13 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="row mb-4">
+<div class="report-container report-dashboard-page">
+<div class="row mb-4 report-page-header">
     <div class="col-md-8">
         <h1 class="h2">Custom Reports</h1>
     </div>
     <div class="col-md-4 text-end">
-        <div class="btn-group">
+        <div class="btn-group report-actions">
             <a href="{{ url_for('reports.monthly_report') }}" class="btn btn-outline-primary">
                 <i class="fas fa-chart-bar me-1"></i> Monthly Report
             </a>
@@ -18,7 +19,7 @@
 </div>
 
 <!-- Date Range Form -->
-<div class="card mb-4">
+<div class="card report-card mb-4">
     <div class="card-header">
         <h5 class="mb-0">Select Date Range</h5>
     </div>
@@ -49,7 +50,7 @@
 </div>
 
 <!-- Summary Cards -->
-<div class="row mb-4">
+<div class="row mb-4 report-summary-row">
     <div class="col-md-4">
         <div class="card bg-primary text-white h-100">
             <div class="card-body">
@@ -103,13 +104,13 @@
 <!-- Charts -->
 <div class="row mb-4">
     <div class="col-md-6">
-        <div class="card h-100">
+        <div class="card report-card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">Expenses by Category</h5>
             </div>
             <div class="card-body">
                 {% if category_chart %}
-                <div id="category-chart"></div>
+                <div id="category-chart" class="report-chart report-chart-md"></div>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
                         try {
@@ -145,12 +146,12 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card h-100">
+        <div class="card report-card h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">Daily Income vs Expense</h5>
             </div>
             <div class="card-body">
-                <div id="time-chart"></div>
+                <div id="time-chart" class="report-chart report-chart-md"></div>
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
                         try {
@@ -183,7 +184,7 @@
 </div>
 
 <!-- Export Options -->
-<div class="card">
+<div class="card report-card">
     <div class="card-header">
         <h5 class="mb-0">Export Report</h5>
     </div>
@@ -193,7 +194,7 @@
                 <p>Export this report in different formats:</p>
             </div>
             <div class="col-md-8">
-                <div class="btn-group">
+                <div class="btn-group report-actions report-export-actions">
                     <button class="btn btn-outline-secondary disabled">
                         <i class="fas fa-file-pdf me-1"></i> PDF
                     </button>
@@ -208,5 +209,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

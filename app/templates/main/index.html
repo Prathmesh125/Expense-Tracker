@@ -1,14 +1,15 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<div class="landing-page">
 <div class="row">
     <div class="col-md-8 offset-md-2 text-center">
-        <div class="mt-5 mb-5">
+        <div class="mt-5 mb-5 landing-hero">
             <h1 class="display-4">Welcome to Personal Expense Tracker</h1>
             <p class="lead">Take control of your finances with our advanced expense tracking solution</p>
             <hr class="my-4">
             <p>Track expenses, monitor income, and gain insights into your spending habits.</p>
-            <div class="mt-4">
+            <div class="mt-4 hero-actions">
                 <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
                 <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg">Login</a>
             </div>
@@ -44,5 +45,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}

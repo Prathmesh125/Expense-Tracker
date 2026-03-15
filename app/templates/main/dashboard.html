@@ -135,12 +135,10 @@
                     });
                 </script>
                 {% else %}
-                <div class="text-center py-5">
-                    <div class="py-4">
-                        <i class="fas fa-chart-pie fa-4x text-muted mb-3"></i>
-                        <p class="lead text-muted">No expense data available for this period</p>
-                        <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-primary mt-2">Add an Expense</a>
-                    </div>
+                <div class="dashboard-empty-state">
+                    <i class="fas fa-chart-pie dashboard-empty-icon text-muted"></i>
+                    <p class="dashboard-empty-text text-muted">No expense data available for this period</p>
+                    <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-primary">Add an Expense</a>
                 </div>
                 {% endif %}
             </div>
@@ -235,14 +233,12 @@
                     });
                 </script>
                 {% else %}
-                <div class="text-center py-5">
-                    <div class="py-4">
-                        <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
-                        <p class="lead text-muted">No income or expense data available</p>
-                        <div class="mt-2">
-                            <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-danger me-2">Add Expense</a>
-                            <a href="{{ url_for('income.new_income') }}" class="btn btn-sm btn-success">Add Income</a>
-                        </div>
+                <div class="dashboard-empty-state">
+                    <i class="fas fa-chart-bar dashboard-empty-icon text-muted"></i>
+                    <p class="dashboard-empty-text text-muted">No income or expense data available</p>
+                    <div class="dashboard-empty-actions">
+                        <a href="{{ url_for('expense.new_expense') }}" class="btn btn-sm btn-danger">Add Expense</a>
+                        <a href="{{ url_for('income.new_income') }}" class="btn btn-sm btn-success">Add Income</a>
                     </div>
                 </div>
                 {% endif %}
@@ -285,7 +281,7 @@
                                 </td>
                                 <td>
                                     <a href="{{ url_for('expense.expense_detail', expense_id=expense.id) }}" class="text-reset text-decoration-none">
-                                        <div class="fw-medium text-truncate" style="max-width: 150px;">{{ expense.description }}</div>
+                                        <div class="fw-medium text-truncate transaction-desc">{{ expense.description }}</div>
                                     </a>
                                 </td>
                                 <td>
@@ -353,7 +349,7 @@
                                 </td>
                                 <td>
                                     <a href="{{ url_for('income.income_detail', income_id=income.id) }}" class="text-reset text-decoration-none">
-                                        <div class="fw-medium text-truncate" style="max-width: 150px;">{{ income.description }}</div>
+                                        <div class="fw-medium text-truncate transaction-desc">{{ income.description }}</div>
                                     </a>
                                 </td>
                                 <td>

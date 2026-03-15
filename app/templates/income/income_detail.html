@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 
 {% block content %}
+<div class="income-detail-page">
 <div class="row mb-4">
     <div class="col-md-8">
         <nav aria-label="breadcrumb">
@@ -12,7 +13,7 @@
         <h1 class="h2">Income Details</h1>
     </div>
     <div class="col-md-4 text-end">
-        <div class="btn-group">
+        <div class="btn-group income-detail-actions">
             <a href="{{ url_for('income.update_income', income_id=income.id) }}" class="btn btn-primary">
                 <i class="fas fa-edit me-1"></i> Edit
             </a>
@@ -95,6 +96,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <!-- Delete Modal -->

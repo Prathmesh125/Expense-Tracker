@@ -17,6 +17,61 @@
   padding: 1.5rem 0;
 }
 
+.report-page-header {
+  align-items: center;
+}
+
+.report-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.report-actions .btn {
+  white-space: nowrap;
+}
+
+.report-summary-row > [class*="col-"] {
+  margin-bottom: 1rem;
+}
+
+.report-chart {
+  width: 100%;
+}
+
+.report-chart-md {
+  min-height: 300px;
+}
+
+.report-chart-lg {
+  min-height: 360px;
+}
+
+.metric-card {
+  padding: 0.95rem;
+  border-radius: 0.75rem;
+  background-color: #f8f9fa;
+  margin-bottom: 0.9rem;
+}
+
+.metric-card h6 {
+  margin-bottom: 0.5rem;
+}
+
+.metric-card .progress {
+  height: 18px;
+  margin-bottom: 0.5rem;
+}
+
+.metric-card .progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: white;
+  font-size: 0.75rem;
+}
+
 /* Report Card */
 .report-card {
   border: none;
@@ -98,6 +153,23 @@
     padding: 1rem 0;
   }
 
+  .report-page-header {
+    gap: 0.75rem 0;
+  }
+
+  .report-page-header .text-end {
+    text-align: left !important;
+  }
+
+  .report-actions {
+    width: 100%;
+    display: flex;
+  }
+
+  .report-actions .btn {
+    flex: 1 1 auto;
+  }
+
   .filter-section {
     padding: 1rem;
   }
@@ -112,12 +184,50 @@
     padding: 0.6rem 0.75rem;
     white-space: nowrap;
   }
+
+  .report-card .table th,
+  .report-card .table td {
+    white-space: nowrap;
+  }
+
+  .report-chart-lg {
+    height: 320px !important;
+    min-height: 320px;
+  }
 }
 
 @media (max-width: 575.98px) {
   .filter-section .btn,
   .report-card .btn {
     width: 100%;
+  }
+
+  .report-actions {
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .report-actions .btn {
+    width: 100%;
+  }
+
+  .report-export-actions {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .report-chart-md {
+    min-height: 250px;
+  }
+
+  .report-chart-lg {
+    height: 260px !important;
+    min-height: 260px;
+  }
+
+  .report-card .table th:nth-child(4),
+  .report-card .table td:nth-child(4) {
+    display: none;
   }
 
   .report-table th:nth-child(5),

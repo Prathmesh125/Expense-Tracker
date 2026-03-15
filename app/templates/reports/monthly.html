@@ -1,13 +1,14 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="row mb-4">
+<div class="report-container report-monthly-page">
+<div class="row mb-4 report-page-header">
     <div class="col-md-8">
         <h1 class="h2">Monthly Report</h1>
         <p class="text-muted">Financial overview for the last 12 months</p>
     </div>
     <div class="col-md-4 text-end">
-        <div class="btn-group">
+        <div class="btn-group report-actions">
             <a href="{{ url_for('reports.report_dashboard') }}" class="btn btn-outline-primary">
                 <i class="fas fa-calendar-alt me-1"></i> Custom Report
             </a>
@@ -19,7 +20,7 @@
 </div>
 
 <!-- Key metrics summary cards -->
-<div class="row mb-4">
+<div class="row mb-4 report-summary-row">
     <div class="col-md-3">
         <div class="card text-white bg-primary h-100">
             <div class="card-body">
@@ -88,7 +89,7 @@
             <div class="card-body">
                 <h6 class="card-title text-uppercase">Positive Balance Months</h6>
                 <h2 class="mb-0">{{ positive_months }}/12</h2>
-                <p class="mt-2 mb-0">
+                <div class="mt-2">
                     <div class="progress" style="height: 8px;">
                         <div class="progress-bar bg-light" role="progressbar" 
                              style="width: {{ (positive_months/12)*100 }}%" 
@@ -96,18 +97,18 @@
                              aria-valuemin="0" 
                              aria-valuemax="12"></div>
                     </div>
-                </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="card mb-4">
+<div class="card report-card mb-4">
     <div class="card-header">
         <h5 class="mb-0">Monthly Income and Expenses (Last 12 Months)</h5>
     </div>
     <div class="card-body">
-        <div id="monthly-chart" style="height: 400px;"></div>
+        <div id="monthly-chart" class="report-chart report-chart-lg" style="height: 400px;"></div>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 try {
@@ -139,7 +140,7 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="card">
+        <div class="card report-card">
             <div class="card-header">
                 <h5 class="mb-0">Monthly Summary</h5>
             </div>
@@ -180,7 +181,7 @@
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card">
+        <div class="card report-card">
             <div class="card-header">
                 <h5 class="mb-0">Monthly Analysis</h5>
             </div>
@@ -283,7 +284,7 @@
 </div>
 
 <!-- Financial Health Indicators -->
-<div class="card mt-4">
+<div class="card report-card mt-4">
     <div class="card-header">
         <h5 class="mb-0">Financial Health Indicators</h5>
     </div>
@@ -365,6 +366,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}
 
