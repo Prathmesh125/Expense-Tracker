@@ -58,6 +58,10 @@ def create_app(config_name):
     from app.utils.error_handlers import init_error_handlers
     init_error_handlers(app)
     
+    # Initialize rate limiting
+    from app.utils.rate_limiter import init_rate_limiting
+    init_rate_limiting(app)
+    
     # Initialize database partitioning
     with app.app_context():
         try:
