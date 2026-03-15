@@ -41,6 +41,9 @@ logs/
 *.sqlite
 *.sqlite3
 
+# Backups
+backups/
+
 # IDE
 .vscode/
 .idea/
