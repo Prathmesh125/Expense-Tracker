@@ -26,6 +26,10 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     
+    # Setup logging
+    from app.utils.logging_config import setup_logging
+    setup_logging(app)
+    
     # Register custom filters
     @app.template_filter('format_number')
     def format_number_filter(value):

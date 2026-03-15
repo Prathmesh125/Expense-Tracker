@@ -32,6 +32,10 @@ ENV/
 instance/
 .webassets-cache
 
+# Logs
+logs/
+*.log
+
 # Database
 *.db
 *.sqlite
