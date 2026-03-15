@@ -62,6 +62,10 @@ def create_app(config_name):
     from app.utils.rate_limiter import init_rate_limiting
     init_rate_limiting(app)
     
+    # Initialize security headers
+    from app.utils.security_headers import init_security_headers
+    init_security_headers(app)
+    
     # Initialize database partitioning
     with app.app_context():
         try:
