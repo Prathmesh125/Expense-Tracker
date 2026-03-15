@@ -50,6 +50,10 @@ def create_app(config_name):
     from app.routes.reports import reports as reports_blueprint
     app.register_blueprint(reports_blueprint)
     
+    # Initialize error handlers
+    from app.utils.error_handlers import init_error_handlers
+    init_error_handlers(app)
+    
     # Initialize database partitioning
     with app.app_context():
         try:
