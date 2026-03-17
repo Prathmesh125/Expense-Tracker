@@ -18,6 +18,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(256))
     first_name = db.Column(db.String(64))
     last_name = db.Column(db.String(64))
+    monthly_budget = db.Column(db.Float, default=0.0)  # Overall monthly budget
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
@@ -53,10 +54,40 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
     description = db.Column(db.String(256))
+    monthly_budget = db.Column(db.Float, default=0.0)  # Monthly budget limit for this category
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     
     # Relationships
     expenses = db.relationship('Expense', backref='category', lazy='dynamic')
+    
+    def get_current_month_spending(self):
+        """Calculate total spending for current month in this category"""
+        from datetime import datetime
+        today = datetime.today()
+        first_day = datetime(today.year, today.month, 1).date()
+        if today.month == 12:
+            last_day = datetime(today.year + 1, 1, 1).date()
+        else:
+            last_day = datetime(today.year, today.month + 1, 1).date()
+        
+        total = db.session.query(db.func.sum(Expense.amount)).\
+            filter(Expense.category_id == self.id).\
+            filter(Expense.date >= first_day).\
+            filter(Expense.date < last_day).scalar()
+        
+        return total or 0.0
+    
+    def is_over_budget(self):
+        """Check if category spending is over budget for current month"""
+        if self.monthly_budget <= 0:
+            return False
+        return self.get_current_month_spending() > self.monthly_budget
+    
+    def budget_usage_percentage(self):
+        """Get percentage of budget used"""
+        if self.monthly_budget <= 0:
+            return 0
+        return (self.get_current_month_spending() / self.monthly_budget) * 100
     
     def __repr__(self):
         return f'<Category {self.name}>'

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from app.models import Expense, Income, Category, Budget
+from app.models import Expense, Income, Category
 from app import db
 import pandas as pd
 from datetime import datetime, timedelta
@@ -115,6 +115,56 @@ def dashboard():
     last_expenses = Expense.query.filter_by(user_id=current_user.id).order_by(Expense.date.desc()).limit(5).all()
     last_incomes = Income.query.filter_by(user_id=current_user.id).order_by(Income.date.desc()).limit(5).all()
     
+    # Check budget alerts
+    budget_alerts = []
+    
+    # Check overall monthly budget
+    if current_user.monthly_budget > 0:
+        budget_usage_pct = (total_expense / current_user.monthly_budget) * 100
+        if budget_usage_pct >= 100:
+            budget_alerts.append({
+                'type': 'danger',
+                'category': 'Overall Budget',
+                'message': f'You have exceeded your monthly budget by ₹{total_expense - current_user.monthly_budget:.2f}!',
+                'percentage': budget_usage_pct
+            })
+        elif budget_usage_pct >= 90:
+            budget_alerts.append({
+                'type': 'warning',
+                'category': 'Overall Budget',
+                'message': f'You have used {budget_usage_pct:.0f}% of your monthly budget.',
+                'percentage': budget_usage_pct
+            })
+        elif budget_usage_pct >= 75:
+            budget_alerts.append({
+                'type': 'info',
+                'category': 'Overall Budget',
+                'message': f'You have used {budget_usage_pct:.0f}% of your monthly budget.',
+                'percentage': budget_usage_pct
+            })
+    
+    # Check category budgets
+    user_categories = Category.query.filter_by(user_id=current_user.id).all()
+    for cat in user_categories:
+        if cat.monthly_budget > 0:
+            cat_spending = cat.get_current_month_spending()
+            cat_usage_pct = (cat_spending / cat.monthly_budget) * 100
+            
+            if cat_usage_pct >= 100:
+                budget_alerts.append({
+                    'type': 'danger',
+                    'category': cat.name,
+                    'message': f'{cat.name} is over budget by ₹{cat_spending - cat.monthly_budget:.2f}!',
+                    'percentage': cat_usage_pct
+                })
+            elif cat_usage_pct >= 90:
+                budget_alerts.append({
+                    'type': 'warning',
+                    'category': cat.name,
+                    'message': f'{cat.name} has used {cat_usage_pct:.0f}% of budget.',
+                    'percentage': cat_usage_pct
+                })
+    
     return render_template(
         'main/dashboard.html',
         title='Dashboard',
@@ -125,7 +175,8 @@ def dashboard():
         category_chart=category_chart,
         income_expense_chart=income_expense_chart,
         last_expenses=last_expenses,
-        last_incomes=last_incomes
+        last_incomes=last_incomes,
+        budget_alerts=budget_alerts
     )
 
 @main.route('/health')
