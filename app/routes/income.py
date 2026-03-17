@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request, make_response
 from flask_login import login_required, current_user
 from app import db
 from app.models import Income
 from app.utils.forms import IncomeForm
 from datetime import datetime, timedelta
+import csv
+import io
 
 income = Blueprint('income', __name__)
 
@@ -211,3 +213,84 @@ def delete_income(income_id):
     db.session.commit()
     flash('Your income has been deleted!', 'success')
     return redirect(url_for('income.incomes'))
+
+@income.route('/incomes/export')
+@login_required
+def export_incomes():
+    """Export incomes to CSV file"""
+    # Get filter parameters (same as incomes route)
+    date_filter = request.args.get('date_filter', 'all')
+    source_filter = request.args.get('source', '')
+    search_query = request.args.get('search', '')
+    
+    # Start with the base query
+    query = Income.query.filter_by(user_id=current_user.id)
+    
+    # Apply date filters
+    today = datetime.today()
+    from_date = None
+    to_date = None
+    
+    if date_filter == 'this_month':
+        from_date = datetime(today.year, today.month, 1)
+        to_date = datetime(today.year + (today.month // 12), 
+                          ((today.month % 12) + 1), 1)
+        to_date = to_date.replace(day=1) - timedelta(days=1)
+    elif date_filter == 'last_month':
+        last_month = today.month - 1 if today.month > 1 else 12
+        last_month_year = today.year if today.month > 1 else today.year - 1
+        from_date = datetime(last_month_year, last_month, 1)
+        to_date = datetime(today.year, today.month, 1) - timedelta(days=1)
+    elif date_filter == 'this_year':
+        from_date = datetime(today.year, 1, 1)
+        to_date = datetime(today.year, 12, 31)
+    elif date_filter == 'last_year':
+        from_date = datetime(today.year - 1, 1, 1)
+        to_date = datetime(today.year - 1, 12, 31)
+    elif date_filter == 'custom':
+        try:
+            from_date = datetime.strptime(request.args.get('start_date'), '%Y-%m-%d') if request.args.get('start_date') else None
+            to_date = datetime.strptime(request.args.get('end_date'), '%Y-%m-%d') if request.args.get('end_date') else None
+        except ValueError:
+            pass
+    
+    # Apply filters to the query
+    if from_date:
+        query = query.filter(Income.date >= from_date)
+    if to_date:
+        query = query.filter(Income.date <= to_date)
+    if source_filter:
+        query = query.filter(Income.source == source_filter)
+    if search_query:
+        search_pattern = f'%{search_query}%'
+        query = query.filter(
+            (Income.source.like(search_pattern)) | 
+            (Income.description.like(search_pattern))
+        )
+    
+    # Get all incomes (no pagination for export)
+    incomes_list = query.order_by(Income.date.desc()).all()
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['Date', 'Source', 'Description', 'Amount'])
+    
+    # Write data rows
+    for inc in incomes_list:
+        writer.writerow([
+            inc.date.strftime('%Y-%m-%d'),
+            inc.source or '',
+            inc.description or '',
+            f'{inc.amount:.2f}'
+        ])
+    
+    # Create response
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = f'attachment; filename=incomes_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    response.headers['Content-Type'] = 'text/csv'
+    
+    return response

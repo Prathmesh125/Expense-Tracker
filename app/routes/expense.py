@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, flash, redirect, url_for, request
+from flask import Blueprint, render_template, flash, redirect, url_for, request, make_response
 from flask_login import login_required, current_user
 from app import db
 from app.models import Expense, Category
 from app.utils.forms import ExpenseForm
 from app.utils.hash_utils import generate_transaction_hash
 from datetime import datetime, timedelta
+import csv
+import io
 
 expense = Blueprint('expense', __name__)
 
@@ -344,3 +346,86 @@ def new_category():
         return redirect(url_for('expense.categories'))
     
     return render_template('expense/create_category.html', title='New Category', form=form, legend='New Category')
+
+@expense.route('/expenses/export')
+@login_required
+def export_expenses():
+    """Export expenses to CSV file"""
+    # Get filter parameters (same as expenses route)
+    date_filter = request.args.get('date_filter', 'all')
+    category_id = request.args.get('category_id', '')
+    search_query = request.args.get('search', '')
+    
+    # Build the base query
+    query = Expense.query.filter_by(user_id=current_user.id)
+    
+    # Apply date filter
+    today = datetime.today().date()
+    from_date = None
+    to_date = None
+    
+    if date_filter == 'this_month':
+        from_date = datetime(today.year, today.month, 1).date()
+        if today.month == 12:
+            to_date = datetime(today.year + 1, 1, 1).date() - timedelta(days=1)
+        else:
+            to_date = datetime(today.year, today.month + 1, 1).date() - timedelta(days=1)
+    elif date_filter == 'last_month':
+        last_month = today.month - 1 if today.month > 1 else 12
+        last_month_year = today.year if today.month > 1 else today.year - 1
+        from_date = datetime(last_month_year, last_month, 1).date()
+        to_date = datetime(today.year, today.month, 1).date() - timedelta(days=1)
+    elif date_filter == 'this_year':
+        from_date = datetime(today.year, 1, 1).date()
+        to_date = datetime(today.year, 12, 31).date()
+    elif date_filter == 'last_year':
+        from_date = datetime(today.year - 1, 1, 1).date()
+        to_date = datetime(today.year - 1, 12, 31).date()
+    elif date_filter == 'custom':
+        start_date_str = request.args.get('start_date')
+        end_date_str = request.args.get('end_date')
+        if start_date_str and end_date_str:
+            try:
+                from_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+                to_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+    
+    # Apply filters
+    if from_date:
+        query = query.filter(Expense.date >= from_date)
+    if to_date:
+        query = query.filter(Expense.date <= to_date)
+    if category_id and category_id.isdigit():
+        query = query.filter(Expense.category_id == int(category_id))
+    if search_query:
+        query = query.filter(Expense.description.like(f'%{search_query}%') | 
+                           Expense.notes.like(f'%{search_query}%'))
+    
+    # Get all expenses (no pagination for export)
+    expenses_list = query.order_by(Expense.date.desc()).all()
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['Date', 'Category', 'Description', 'Notes', 'Amount'])
+    
+    # Write data rows
+    for exp in expenses_list:
+        writer.writerow([
+            exp.date.strftime('%Y-%m-%d'),
+            exp.category.name if exp.category else 'Uncategorized',
+            exp.description or '',
+            exp.notes or '',
+            f'{exp.amount:.2f}'
+        ])
+    
+    # Create response
+    output.seek(0)
+    response = make_response(output.getvalue())
+    response.headers['Content-Disposition'] = f'attachment; filename=expenses_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+    response.headers['Content-Type'] = 'text/csv'
+    
+    return response
