@@ -10,12 +10,13 @@ income = Blueprint('income', __name__)
 @income.route('/incomes')
 @login_required
 def incomes():
-    # Get page number from query parameters (for pagination)
+    # Get page number, filters, search, and sorting from query parameters
     page = request.args.get('page', 1, type=int)
-    
-    # Get date filter parameters
     date_filter = request.args.get('date_filter', 'all')
     source_filter = request.args.get('source', '')
+    search_query = request.args.get('search', '')
+    sort_by = request.args.get('sort_by', 'date')
+    sort_order = request.args.get('sort_order', 'desc')
     
     # Start with the base query
     query = Income.query.filter_by(user_id=current_user.id)
@@ -70,9 +71,17 @@ def incomes():
     if source_filter:
         query = query.filter(Income.source == source_filter)
     
-    # Get all sources for the filter dropdown
-    all_sources = db.session.query(Income.source).distinct().all()
-    sources = [source[0] for source in all_sources]
+    # Apply search query
+    if search_query:
+        search_pattern = f'%{search_query}%'
+        query = query.filter(
+            (Income.source.like(search_pattern)) | 
+            (Income.description.like(search_pattern))
+        )
+    
+    # Get all sources for the filter dropdown (only for current user)
+    all_sources = db.session.query(Income.source).filter(Income.user_id == current_user.id).distinct().all()
+    sources = [source[0] for source in all_sources if source[0]]
     
     # Get statistics for the current filter
     total_income = query.with_entities(db.func.sum(Income.amount)).scalar() or 0
@@ -88,11 +97,28 @@ def incomes():
     )
     monthly_total = current_month_query.with_entities(db.func.sum(Income.amount)).scalar() or 0
     
+    # Apply sorting
+    if sort_by == 'amount':
+        if sort_order == 'asc':
+            query = query.order_by(Income.amount.asc())
+        else:
+            query = query.order_by(Income.amount.desc())
+    elif sort_by == 'source':
+        if sort_order == 'asc':
+            query = query.order_by(Income.source.asc(), Income.date.desc())
+        else:
+            query = query.order_by(Income.source.desc(), Income.date.desc())
+    else:  # Default to date sorting
+        if sort_order == 'asc':
+            query = query.order_by(Income.date.asc())
+        else:
+            query = query.order_by(Income.date.desc())
+    
     # Sort and paginate
-    incomes_list = query.order_by(Income.date.desc()).paginate(page=page, per_page=10)
+    incomes_list = query.paginate(page=page, per_page=10)
     
     # Calculate if filters are active
-    is_filtered = date_filter != 'all' or source_filter != ''
+    is_filtered = date_filter != 'all' or source_filter != '' or search_query != ''
     
     return render_template(
         'income/incomes.html', 
