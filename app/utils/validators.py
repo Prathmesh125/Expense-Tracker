@@ -6,12 +6,30 @@ from datetime import datetime, date
 from decimal import Decimal, InvalidOperation
 
 def validate_email(email):
-    """Validate email format"""
+    """Validate email format with enhanced security checks"""
     if not email:
         return False, "Email is required"
     
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    # Check email length
+    if len(email) > 254:
+        return False, "Email address is too long"
+    
+    # Enhanced email pattern with stricter validation
+    pattern = r'^[a-zA-Z0-9][a-zA-Z0-9._%+-]*[a-zA-Z0-9]@[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}$'
     if not re.match(pattern, email):
+        return False, "Invalid email format"
+    
+    # Check for common disposable email domains
+    disposable_domains = [
+        'tempmail.com', 'throwaway.email', '10minutemail.com', 
+        'guerrillamail.com', 'mailinator.com', 'trashmail.com'
+    ]
+    email_domain = email.split('@')[-1].lower()
+    if email_domain in disposable_domains:
+        return False, "Disposable email addresses are not allowed"
+    
+    # Check for consecutive dots
+    if '..' in email:
         return False, "Invalid email format"
     
     return True, None
