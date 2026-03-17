@@ -25,6 +25,14 @@ def dashboard():
     start_of_month = datetime(today.year, today.month, 1)
     end_of_month = (start_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
     
+    # Get last month dates for comparison
+    if today.month == 1:
+        last_month_start = datetime(today.year - 1, 12, 1)
+        last_month_end = datetime(today.year, 1, 1) - timedelta(days=1)
+    else:
+        last_month_start = datetime(today.year, today.month - 1, 1)
+        last_month_end = start_of_month - timedelta(days=1)
+    
     # Fetch data from the database using the range partitioning advantage
     expenses = Expense.query.filter(
         Expense.user_id == current_user.id,
@@ -38,12 +46,37 @@ def dashboard():
         Income.date <= end_of_month
     ).all()
     
+    # Fetch last month data for comparison
+    last_month_expenses = Expense.query.filter(
+        Expense.user_id == current_user.id,
+        Expense.date >= last_month_start,
+        Expense.date <= last_month_end
+    ).all()
+    
+    last_month_incomes = Income.query.filter(
+        Income.user_id == current_user.id,
+        Income.date >= last_month_start,
+        Income.date <= last_month_end
+    ).all()
+    
     # Calculate totals
     total_expense = sum(expense.amount for expense in expenses)
     total_income = sum(income.amount for income in incomes)
     balance = total_income - total_expense
     
-    # Get expense by category data for pie chart
+    # Calculate last month totals
+    last_month_expense = sum(expense.amount for expense in last_month_expenses)
+    last_month_income = sum(income.amount for income in last_month_incomes)
+    
+    # Calculate percentage changes
+    expense_change = ((total_expense - last_month_expense) / last_month_expense * 100) if last_month_expense > 0 else 0
+    income_change = ((total_income - last_month_income) / last_month_income * 100) if last_month_income > 0 else 0
+    
+    # Calculate daily average
+    days_in_month = (end_of_month - start_of_month).days + 1
+    daily_avg_expense = total_expense / days_in_month if days_in_month > 0 else 0
+    
+    # Get expense by category data for pie chart and top categories
     categories = {}
     for expense in expenses:
         category_name = expense.category.name if expense.category else 'Uncategorized'
@@ -165,10 +198,13 @@ def dashboard():
                     'percentage': cat_usage_pct
                 })
     
+    # Get top 5 spending categories
+    top_categories = sorted(categories.items(), key=lambda x: x[1], reverse=True)[:5]
+    
     return render_template(
         'main/dashboard.html',
         title='Dashboard',
-        today=today,  # Add today variable
+        today=today,
         total_expense=total_expense,
         total_income=total_income,
         balance=balance,
@@ -176,7 +212,16 @@ def dashboard():
         income_expense_chart=income_expense_chart,
         last_expenses=last_expenses,
         last_incomes=last_incomes,
-        budget_alerts=budget_alerts
+        budget_alerts=budget_alerts,
+        # New analytics data
+        expense_change=expense_change,
+        income_change=income_change,
+        last_month_expense=last_month_expense,
+        last_month_income=last_month_income,
+        daily_avg_expense=daily_avg_expense,
+        top_categories=top_categories,
+        expense_count=len(expenses),
+        income_count=len(incomes)
     )
 
 @main.route('/health')
