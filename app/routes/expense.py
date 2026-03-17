@@ -11,14 +11,16 @@ expense = Blueprint('expense', __name__)
 @expense.route('/expenses')
 @login_required
 def expenses():
-    # Get page number and filters from query parameters
+    # Get page number, filters, and sorting from query parameters
     page = request.args.get('page', 1, type=int)
     date_filter = request.args.get('date_filter', 'all')
     category_id = request.args.get('category_id', '')
     search_query = request.args.get('search', '')
+    sort_by = request.args.get('sort_by', 'date')
+    sort_order = request.args.get('sort_order', 'desc')
     
     # Debug log filter parameters
-    print(f"Filter params: date_filter={date_filter}, start_date={request.args.get('start_date')}, end_date={request.args.get('end_date')}, category={category_id}, search={search_query}")
+    print(f"Filter params: date_filter={date_filter}, start_date={request.args.get('start_date')}, end_date={request.args.get('end_date')}, category={category_id}, search={search_query}, sort={sort_by}:{sort_order}")
     
     # Build the base query
     query = Expense.query.filter_by(user_id=current_user.id)
@@ -91,9 +93,32 @@ def expenses():
         query = query.filter(Expense.description.like(f'%{search_query}%') | 
                            Expense.notes.like(f'%{search_query}%'))
     
+    # Apply sorting
+    if sort_by == 'amount':
+        if sort_order == 'asc':
+            query = query.order_by(Expense.amount.asc())
+        else:
+            query = query.order_by(Expense.amount.desc())
+    elif sort_by == 'description':
+        if sort_order == 'asc':
+            query = query.order_by(Expense.description.asc())
+        else:
+            query = query.order_by(Expense.description.desc())
+    elif sort_by == 'category':
+        query = query.join(Category, Expense.category_id == Category.id, isouter=True)
+        if sort_order == 'asc':
+            query = query.order_by(Category.name.asc(), Expense.date.desc())
+        else:
+            query = query.order_by(Category.name.desc(), Expense.date.desc())
+    else:  # Default to date sorting
+        if sort_order == 'asc':
+            query = query.order_by(Expense.date.asc())
+        else:
+            query = query.order_by(Expense.date.desc())
+    
     # Get all expenses with pagination (15 per page)
     # Range partitioning on date makes this query efficient
-    expenses_list = query.order_by(Expense.date.desc()).paginate(page=page, per_page=15)
+    expenses_list = query.paginate(page=page, per_page=15)
     
     # Calculate statistics based on filter selection
     today = datetime.today()
