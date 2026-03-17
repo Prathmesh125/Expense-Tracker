@@ -5,47 +5,74 @@ from app.models import User
 from datetime import datetime
 
 class RegistrationForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
-    first_name = StringField('First Name', validators=[DataRequired(), Length(max=64)])
-    last_name = StringField('Last Name', validators=[DataRequired(), Length(max=64)])
+    username = StringField('Username', 
+                          validators=[DataRequired(message='Please enter a username.'), 
+                                    Length(min=2, max=20, message='Username must be between 2 and 20 characters.')])
+    email = StringField('Email', 
+                       validators=[DataRequired(message='Please enter your email address.'), 
+                                 Email(message='Please enter a valid email address.')])
+    password = PasswordField('Password', 
+                           validators=[DataRequired(message='Please enter a password.')])
+    confirm_password = PasswordField('Confirm Password', 
+                                    validators=[DataRequired(message='Please confirm your password.'), 
+                                              EqualTo('password', message='Passwords must match.')])
+    first_name = StringField('First Name', 
+                            validators=[DataRequired(message='Please enter your first name.'), 
+                                      Length(max=64, message='First name cannot exceed 64 characters.')])
+    last_name = StringField('Last Name', 
+                           validators=[DataRequired(message='Please enter your last name.'), 
+                                     Length(max=64, message='Last name cannot exceed 64 characters.')])
     submit = SubmitField('Sign Up')
     
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user:
-            raise ValidationError('That username is already taken. Please choose a different one.')
+            raise ValidationError('This username is already taken. Please choose a different one.')
     
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user:
-            raise ValidationError('That email is already registered. Please use a different one.')
+            raise ValidationError('An account with this email already exists. Please log in or use a different email.')
 
 class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
+    email = StringField('Email', 
+                       validators=[DataRequired(message='Please enter your email address.'), 
+                                 Email(message='Please enter a valid email address.')])
+    password = PasswordField('Password', 
+                           validators=[DataRequired(message='Please enter your password.')])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
 class ExpenseForm(FlaskForm):
-    amount = FloatField('Amount', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[Length(max=256)])
-    date = DateField('Date', validators=[DataRequired()], default=datetime.utcnow)
+    amount = FloatField('Amount', 
+                       validators=[DataRequired(message='Please enter an amount.')])
+    description = TextAreaField('Description', 
+                               validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
+    date = DateField('Date', 
+                    validators=[DataRequired(message='Please select a date.')], 
+                    default=datetime.utcnow)
     category = SelectField('Category', coerce=int)
     submit = SubmitField('Add Expense')
 
 class IncomeForm(FlaskForm):
-    amount = FloatField('Amount', validators=[DataRequired()])
-    source = StringField('Source', validators=[DataRequired(), Length(max=128)])
-    description = TextAreaField('Description', validators=[Length(max=256)])
-    date = DateField('Date', validators=[DataRequired()], default=datetime.utcnow)
+    amount = FloatField('Amount', 
+                       validators=[DataRequired(message='Please enter an amount.')])
+    source = StringField('Source', 
+                        validators=[DataRequired(message='Please enter the income source.'), 
+                                  Length(max=128, message='Source cannot exceed 128 characters.')])
+    description = TextAreaField('Description', 
+                               validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
+    date = DateField('Date', 
+                    validators=[DataRequired(message='Please select a date.')], 
+                    default=datetime.utcnow)
     submit = SubmitField('Add Income')
 
 class CategoryForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired(), Length(max=64)])
-    description = TextAreaField('Description', validators=[Length(max=256)])
+    name = StringField('Name', 
+                      validators=[DataRequired(message='Please enter a category name.'), 
+                                Length(max=64, message='Category name cannot exceed 64 characters.')])
+    description = TextAreaField('Description', 
+                               validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
     submit = SubmitField('Add Category')
 
 class BudgetForm(FlaskForm):
