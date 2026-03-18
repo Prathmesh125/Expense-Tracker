@@ -91,6 +91,41 @@ class Category(db.Model):
             return 0
         return (self.get_current_month_spending() / self.monthly_budget) * 100
     
+    def get_expense_count(self):
+        """Get total number of expenses in this category"""
+        return self.expenses.count()
+    
+    def get_total_spending(self):
+        """Get total spending across all time for this category"""
+        total = db.session.query(db.func.sum(Expense.amount)).\
+            filter(Expense.category_id == self.id).scalar()
+        return total or 0.0
+    
+    def get_average_expense(self):
+        """Get average expense amount for this category"""
+        count = self.get_expense_count()
+        if count == 0:
+            return 0.0
+        return self.get_total_spending() / count
+    
+    def get_last_used_date(self):
+        """Get the date of the most recent expense in this category"""
+        last_expense = self.expenses.order_by(Expense.date.desc()).first()
+        return last_expense.date if last_expense else None
+    
+    def get_usage_statistics(self):
+        """Get comprehensive usage statistics for this category"""
+        return {
+            'total_expenses': self.get_expense_count(),
+            'total_spending': round(self.get_total_spending(), 2),
+            'average_expense': round(self.get_average_expense(), 2),
+            'current_month_spending': round(self.get_current_month_spending(), 2),
+            'monthly_budget': self.monthly_budget,
+            'budget_usage_percentage': round(self.budget_usage_percentage(), 2),
+            'is_over_budget': self.is_over_budget(),
+            'last_used_date': self.get_last_used_date().strftime('%Y-%m-%d') if self.get_last_used_date() else None
+        }
+    
     def __repr__(self):
         return f'<Category {self.name}>'
 
