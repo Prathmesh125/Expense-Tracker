@@ -435,3 +435,83 @@ def export_expenses():
     response.headers['Content-Type'] = 'text/csv'
     
     return response
+
+@expense.route('/api/expenses/stats')
+@login_required
+def expense_stats_api():
+    """API endpoint for expense statistics"""
+    # Get date range from query params (default to current month)
+    today = datetime.today()
+    
+    start_date_str = request.args.get('start_date')
+    end_date_str = request.args.get('end_date')
+    
+    if start_date_str and end_date_str:
+        try:
+            from_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            to_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
+    else:
+        # Default to current month
+        from_date = datetime(today.year, today.month, 1).date()
+        if today.month == 12:
+            to_date = datetime(today.year + 1, 1, 1).date() - timedelta(days=1)
+        else:
+            to_date = datetime(today.year, today.month + 1, 1).date() - timedelta(days=1)
+    
+    # Query expenses
+    query = Expense.query.filter_by(user_id=current_user.id)
+    query = query.filter(Expense.date >= from_date, Expense.date <= to_date)
+    expenses = query.all()
+    
+    # Calculate statistics
+    total = sum(exp.amount for exp in expenses)
+    count = len(expenses)
+    average = total / count if count > 0 else 0
+    
+    # Category breakdown
+    category_breakdown = {}
+    for exp in expenses:
+        cat_name = exp.category.name if exp.category else 'Uncategorized'
+        if cat_name in category_breakdown:
+            category_breakdown[cat_name] += exp.amount
+        else:
+            category_breakdown[cat_name] = exp.amount
+    
+    # Daily breakdown
+    daily_breakdown = {}
+    for exp in expenses:
+        date_str = exp.date.strftime('%Y-%m-%d')
+        if date_str in daily_breakdown:
+            daily_breakdown[date_str] += exp.amount
+        else:
+            daily_breakdown[date_str] = exp.amount
+    
+    # Top expenses
+    top_expenses = sorted(expenses, key=lambda x: x.amount, reverse=True)[:5]
+    top_expenses_data = [
+        {
+            'id': exp.id,
+            'amount': exp.amount,
+            'description': exp.description,
+            'date': exp.date.strftime('%Y-%m-%d'),
+            'category': exp.category.name if exp.category else 'Uncategorized'
+        }
+        for exp in top_expenses
+    ]
+    
+    return jsonify({
+        'period': {
+            'start': from_date.strftime('%Y-%m-%d'),
+            'end': to_date.strftime('%Y-%m-%d')
+        },
+        'summary': {
+            'total': round(total, 2),
+            'count': count,
+            'average': round(average, 2)
+        },
+        'category_breakdown': {k: round(v, 2) for k, v in category_breakdown.items()},
+        'daily_breakdown': {k: round(v, 2) for k, v in daily_breakdown.items()},
+        'top_expenses': top_expenses_data
+    })
