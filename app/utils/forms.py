@@ -48,6 +48,8 @@ class ExpenseForm(FlaskForm):
                        validators=[DataRequired(message='Please enter an amount.')])
     description = TextAreaField('Description', 
                                validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
+    notes = TextAreaField('Notes', 
+                         validators=[Length(max=1000, message='Notes cannot exceed 1000 characters.')])
     date = DateField('Date', 
                     validators=[DataRequired(message='Please select a date.')], 
                     default=datetime.utcnow)

@@ -235,6 +235,7 @@ def new_expense():
         expense = Expense(
             amount=form.amount.data,
             description=form.description.data,
+            notes=form.notes.data,
             date=form.date.data,
             user_id=current_user.id,
             category_id=form.category.data if form.category.data > 0 else None
@@ -291,6 +292,7 @@ def update_expense(expense_id):
     if form.validate_on_submit():
         expense.amount = form.amount.data
         expense.description = form.description.data
+        expense.notes = form.notes.data
         expense.date = form.date.data
         expense.category_id = form.category.data if form.category.data > 0 else None
         
@@ -301,6 +303,7 @@ def update_expense(expense_id):
     elif request.method == 'GET':
         form.amount.data = expense.amount
         form.description.data = expense.description
+        form.notes.data = expense.notes
         form.date.data = expense.date
         form.category.data = expense.category_id if expense.category_id else 0
     
