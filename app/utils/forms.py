@@ -97,3 +97,38 @@ class DateRangeForm(FlaskForm):
     start_date = DateField('Start Date', validators=[DataRequired()], default=datetime.utcnow)
     end_date = DateField('End Date', validators=[DataRequired()], default=datetime.utcnow)
     submit = SubmitField('Generate Report')
+
+class ProfileSettingsForm(FlaskForm):
+    first_name = StringField('First Name', 
+                            validators=[DataRequired(message='Please enter your first name.'), 
+                                      Length(max=64, message='First name cannot exceed 64 characters.')])
+    last_name = StringField('Last Name', 
+                           validators=[DataRequired(message='Please enter your last name.'), 
+                                     Length(max=64, message='Last name cannot exceed 64 characters.')])
+    email = StringField('Email', 
+                       validators=[DataRequired(message='Please enter your email address.'), 
+                                 Email(message='Please enter a valid email address.')])
+    monthly_budget = FloatField('Monthly Budget (₹)', 
+                               validators=[])
+    submit = SubmitField('Update Profile')
+    
+    def __init__(self, original_email, *args, **kwargs):
+        super(ProfileSettingsForm, self).__init__(*args, **kwargs)
+        self.original_email = original_email
+    
+    def validate_email(self, email):
+        if email.data != self.original_email:
+            user = User.query.filter_by(email=email.data).first()
+            if user:
+                raise ValidationError('This email is already registered to another account.')
+
+class ChangePasswordForm(FlaskForm):
+    current_password = PasswordField('Current Password', 
+                                    validators=[DataRequired(message='Please enter your current password.')])
+    new_password = PasswordField('New Password', 
+                                validators=[DataRequired(message='Please enter a new password.'), 
+                                          Length(min=8, message='Password must be at least 8 characters long.')])
+    confirm_password = PasswordField('Confirm New Password', 
+                                    validators=[DataRequired(message='Please confirm your new password.'), 
+                                              EqualTo('new_password', message='Passwords must match.')])
+    submit = SubmitField('Change Password')
