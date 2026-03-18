@@ -2,7 +2,18 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, FloatField, TextAreaField, SelectField, DateField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from app.models import User
-from datetime import datetime
+from datetime import datetime, date
+
+def validate_not_future_date(form, field):
+    """Custom validator to ensure date is not in the future"""
+    if field.data and field.data > date.today():
+        raise ValidationError('Date cannot be in the future.')
+
+def validate_positive_amount(form, field):
+    """Custom validator to ensure amount is positive"""
+    if field.data is not None and field.data <= 0:
+        raise ValidationError('Amount must be greater than zero.')
+
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', 
@@ -45,27 +56,31 @@ class LoginForm(FlaskForm):
 
 class ExpenseForm(FlaskForm):
     amount = FloatField('Amount', 
-                       validators=[DataRequired(message='Please enter an amount.')])
+                       validators=[DataRequired(message='Please enter an amount.'), 
+                                 validate_positive_amount])
     description = TextAreaField('Description', 
                                validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
     notes = TextAreaField('Notes', 
                          validators=[Length(max=1000, message='Notes cannot exceed 1000 characters.')])
     date = DateField('Date', 
-                    validators=[DataRequired(message='Please select a date.')], 
+                    validators=[DataRequired(message='Please select a date.'), 
+                              validate_not_future_date], 
                     default=datetime.utcnow)
     category = SelectField('Category', coerce=int)
     submit = SubmitField('Add Expense')
 
 class IncomeForm(FlaskForm):
     amount = FloatField('Amount', 
-                       validators=[DataRequired(message='Please enter an amount.')])
+                       validators=[DataRequired(message='Please enter an amount.'), 
+                                 validate_positive_amount])
     source = StringField('Source', 
                         validators=[DataRequired(message='Please enter the income source.'), 
                                   Length(max=128, message='Source cannot exceed 128 characters.')])
     description = TextAreaField('Description', 
                                validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
     date = DateField('Date', 
-                    validators=[DataRequired(message='Please select a date.')], 
+                    validators=[DataRequired(message='Please select a date.'), 
+                              validate_not_future_date], 
                     default=datetime.utcnow)
     submit = SubmitField('Add Income')
 
