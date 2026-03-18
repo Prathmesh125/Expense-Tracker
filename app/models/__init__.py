@@ -54,6 +54,8 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True)
     description = db.Column(db.String(256))
+    color = db.Column(db.String(7), default='#6c757d')  # Hex color code for visual distinction
+    icon = db.Column(db.String(50), default='fa-tag')  # FontAwesome icon class
     monthly_budget = db.Column(db.Float, default=0.0)  # Monthly budget limit for this category
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     

@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request,
 from flask_login import login_required, current_user
 from app import db
 from app.models import Expense, Category
-from app.utils.forms import ExpenseForm
+from app.utils.forms import ExpenseForm, CategoryForm
 from app.utils.hash_utils import generate_transaction_hash
 from datetime import datetime, timedelta
 import csv
@@ -333,12 +333,15 @@ def categories():
 @expense.route('/category/new', methods=['GET', 'POST'])
 @login_required
 def new_category():
-    form = ExpenseForm()
+    form = CategoryForm()
     
     if form.validate_on_submit():
         category = Category(
             name=form.name.data,
             description=form.description.data,
+            color=form.color.data or '#6c757d',
+            icon=form.icon.data or 'fa-tag',
+            monthly_budget=form.monthly_budget.data or 0.0,
             user_id=current_user.id
         )
         

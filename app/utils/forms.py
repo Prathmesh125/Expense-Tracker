@@ -75,7 +75,24 @@ class CategoryForm(FlaskForm):
                                 Length(max=64, message='Category name cannot exceed 64 characters.')])
     description = TextAreaField('Description', 
                                validators=[Length(max=256, message='Description cannot exceed 256 characters.')])
-    submit = SubmitField('Add Category')
+    color = StringField('Color', 
+                       validators=[Length(max=7, message='Color must be a valid hex code.')],
+                       default='#6c757d')
+    icon = SelectField('Icon', 
+                      choices=[
+                          ('fa-shopping-cart', 'Shopping Cart'),
+                          ('fa-utensils', 'Food & Dining'),
+                          ('fa-car', 'Transportation'),
+                          ('fa-home', 'Housing'),
+                          ('fa-heartbeat', 'Healthcare'),
+                          ('fa-film', 'Entertainment'),
+                          ('fa-graduation-cap', 'Education'),
+                          ('fa-plane', 'Travel'),
+                          ('fa-tshirt', 'Clothing'),
+                          ('fa-tag', 'General')
+                      ])
+    monthly_budget = FloatField('Monthly Budget (₹)')
+    submit = SubmitField('Save Category')
 
 class BudgetForm(FlaskForm):
     amount = FloatField('Amount', validators=[DataRequired()])
