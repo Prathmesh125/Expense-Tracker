@@ -4,6 +4,21 @@ Pagination utilities for query results
 from flask import request, url_for
 from math import ceil
 
+# Available page size options
+PAGE_SIZE_OPTIONS = [10, 15, 20, 25, 50, 100]
+DEFAULT_PAGE_SIZE = 15
+
+def get_page_size_from_request():
+    """Get page size from request args, defaulting to DEFAULT_PAGE_SIZE"""
+    try:
+        per_page = int(request.args.get('per_page', DEFAULT_PAGE_SIZE))
+        # Validate that it's in allowed options
+        if per_page not in PAGE_SIZE_OPTIONS:
+            per_page = DEFAULT_PAGE_SIZE
+        return per_page
+    except (ValueError, TypeError):
+        return DEFAULT_PAGE_SIZE
+
 class Pagination:
     """
     Pagination helper class for database queries
